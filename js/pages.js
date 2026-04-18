@@ -50,6 +50,129 @@ export const HomePage = () => `
     </section>
 `;
 
+export const UserRegistrationPage = () => `
+    <div class="container page-container">
+        <div class="auth-card-container">
+            <div class="card">
+                <h2>Create Your VetLink Account</h2>
+                <p class="text-muted">Join Sri Lanka's digital pet health platform.</p>
+                <form id="user-registration-form" class="mt-20">
+                    <div class="form-grid">
+                        ${Input({ label: 'Full Name', id: 'fullName', name: 'fullName', placeholder: 'e.g. John Doe', required: true })}
+                        ${Input({ label: 'Email Address', id: 'email', name: 'email', type: 'email', placeholder: 'john@example.com', required: true })}
+                        ${Input({ label: 'Phone Number', id: 'phone', name: 'phone', placeholder: '07X XXX XXXX', required: true })}
+                        ${Input({ 
+                            label: 'Location (City)', 
+                            id: 'location', 
+                            name: 'location', 
+                            options: cities, 
+                            placeholder: 'Select your city', 
+                            required: true 
+                        })}
+                        ${Input({ label: 'Password', id: 'password', name: 'password', type: 'password', placeholder: 'Create a strong password', required: true })}
+                        ${Input({ label: 'Confirm Password', id: 'confirmPassword', name: 'confirmPassword', type: 'password', placeholder: 'Confirm your password', required: true })}
+                    </div>
+                    <div class="form-actions mt-20">
+                        <button type="submit" class="btn btn-primary w-full">Create Account</button>
+                    </div>
+                    <div class="auth-divider">
+                        <span>OR</span>
+                    </div>
+                    <p class="text-center text-sm">
+                        Already have an account? <a href="#login" class="text-primary">Sign In</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+`;
+
+export const UserProfilePage = () => `
+    <div class="container page-container py-40">
+        <div class="dashboard-layout">
+            <aside class="dashboard-sidebar">
+                <div class="card">
+                    <div class="text-center">
+                        <div class="avatar" style="width: 80px; height: 80px; margin: 0 auto 20px; font-size: 2rem;">
+                            ${JSON.parse(localStorage.getItem('currentUser') || '{}').fullName?.charAt(0).toUpperCase() || 'U'}
+                        </div>
+                        <h3>${JSON.parse(localStorage.getItem('currentUser') || '{}').fullName || 'User Name'}</h3>
+                        <p class="text-muted">${JSON.parse(localStorage.getItem('currentUser') || '{}').email || 'user@example.com'}</p>
+                        <p class="text-sm text-muted mt-10">
+                            <i data-lucide="map-pin" class="inline-icon"></i>
+                            ${JSON.parse(localStorage.getItem('currentUser') || '{}').location || 'Location'}
+                        </p>
+                    </div>
+                    <div class="mt-20">
+                        <a href="#register" class="btn btn-primary w-full">
+                            <i data-lucide="plus"></i> Add New Pet
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card mt-20">
+                    <h4>Account Settings</h4>
+                    <div class="mt-15">
+                        <a href="#" class="btn btn-outline w-full mb-10">Edit Profile</a>
+                        <button onclick="handleLogout()" class="btn btn-outline w-full text-danger">Logout</button>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="dashboard-main">
+                <div class="card mb-30">
+                    <h3>My Pets</h3>
+                    <p class="text-muted text-sm mt-10">Manage your registered pets and their health records.</p>
+                    <div class="mt-20" id="user-pets-list">
+                        <!-- Pet list will be populated here -->
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Quick Stats</h3>
+                    <div class="stats-mini-grid mt-20">
+                        <div class="stat-mini">
+                            <span class="label">Total Pets</span>
+                            <span class="value" id="total-pets">0</span>
+                        </div>
+                        <div class="stat-mini">
+                            <span class="label">Vaccination Records</span>
+                            <span class="value" id="total-records">0</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+`;
+
+export const LoginPage = () => `
+    <div class="container page-container">
+        <div class="auth-card-container">
+            <div class="card">
+                <div class="text-center mb-30">
+                    <div class="logo-container justify-center mb-10">
+                        <div class="logo-placeholder"><i data-lucide="shield-plus"></i></div>
+                        <span class="app-name">VetLink</span>
+                    </div>
+                    <p class="text-muted">Welcome back! Sign in to your account.</p>
+                </div>
+                <form id="login-form">
+                    ${Input({ label: 'Email Address', id: 'loginEmail', name: 'email', type: 'email', placeholder: 'john@example.com', required: true })}
+                    ${Input({ label: 'Password', id: 'loginPassword', name: 'password', type: 'password', placeholder: 'Enter your password', required: true })}
+                    <button type="submit" class="btn btn-primary w-full mt-20">Sign In</button>
+                </form>
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+                <p class="text-center text-sm">
+                    Don't have an account? <a href="#user-register" class="text-primary">Create Account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+`;
+
 export const RegisterPetPage = () => `
     <div class="container page-container">
         <div class="auth-card-container">

@@ -1,4 +1,4 @@
-import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage, VaccinationBookPage } from './pages.js';
+import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, UserRegistrationPage, UserProfilePage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage, VaccinationBookPage } from './pages.js';
 import { mockPets, mockVets } from './data.js';
 import { FirebaseService } from './firebase-service.js';
 
@@ -21,6 +21,9 @@ class VetLinkApp {
     }
 
     async init() {
+        // Update navigation based on login status
+        this.updateNavigation();
+
         // Initialize Firebase Sync
         try {
             FirebaseService.subscribeToPets((pets) => {
@@ -85,11 +88,17 @@ class VetLinkApp {
             case 'home':
                 html = HomePage();
                 break;
+            case 'user-register':
+                html = UserRegistrationPage();
+                break;
             case 'register':
                 html = RegisterPetPage();
                 break;
             case 'dashboard':
                 html = DashboardPage(this.state.pets);
+                break;
+            case 'profile':
+                html = UserProfilePage();
                 break;
             case 'add-vaccination':
                 html = AddVaccinationPage();
@@ -123,6 +132,28 @@ class VetLinkApp {
         this.attachEventListeners(path);
     }
 
+    updateNavigation() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const loginLink = document.getElementById('login-link');
+        const registerLink = document.getElementById('register-link');
+        const profileLink = document.getElementById('profile-link');
+
+        if (currentUser && currentUser.id) {
+            // User is logged in
+            if (loginLink) loginLink.style.display = 'none';
+            if (registerLink) registerLink.style.display = 'none';
+            if (profileLink) {
+                profileLink.style.display = 'block';
+                profileLink.textContent = currentUser.fullName.split(' ')[0]; // Show first name
+            }
+        } else {
+            // User is not logged in
+            if (loginLink) loginLink.style.display = 'block';
+            if (registerLink) registerLink.style.display = 'block';
+            if (profileLink) profileLink.style.display = 'none';
+        }
+    }
+
     calculateStats() {
         return {
             vets: this.state.vets.length,
@@ -135,10 +166,26 @@ class VetLinkApp {
         this.appRoot.innerHTML = html;
         // Re-initialize Lucide icons after rendering new content
         lucide.createIcons();
+        // Update navigation based on login status
+        this.updateNavigation();
         window.scrollTo(0, 0);
     }
 
     attachEventListeners(path) {
+        if (path === 'user-register') {
+            const form = document.getElementById('user-registration-form');
+            if (form) {
+                form.addEventListener('submit', (e) => this.handleUserRegistration(e));
+            }
+        }
+
+        if (path === 'login') {
+            const form = document.getElementById('login-form');
+            if (form) {
+                form.addEventListener('submit', (e) => this.handleLogin(e));
+            }
+        }
+
         if (path === 'register') {
             const form = document.getElementById('register-pet-form');
             if (form) {
@@ -168,6 +215,107 @@ class VetLinkApp {
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => this.handleVetSearch(e));
             }
+        }
+
+        if (path === 'profile') {
+            this.populateUserProfile();
+        }
+    }
+
+    handleUserRegistration(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        
+        // Validate passwords match
+        if (formData.get('password') !== formData.get('confirmPassword')) {
+            alert('Passwords do not match!');
+            return;
+        }
+
+        const newUser = {
+            id: 'user' + Date.now(),
+            fullName: formData.get('fullName'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            location: formData.get('location'),
+            password: formData.get('password'), // In production, this should be hashed
+            registeredAt: new Date().toISOString()
+        };
+
+        // Store user in localStorage (for demo purposes)
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Auto-login after registration
+        localStorage.setItem('currentUser', JSON.stringify(newUser));
+        
+        alert('Account created successfully! Welcome to VetLink!');
+        window.location.hash = '#profile';
+    }
+
+    handleLogin(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const email = formData.get('email');
+        const password = formData.get('password');
+
+        // Get users from localStorage
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const user = users.find(u => u.email === email && u.password === password);
+
+        if (user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            alert('Login successful! Welcome back!');
+            window.location.hash = '#profile';
+        } else {
+            alert('Invalid email or password. Please try again.');
+        }
+    }
+
+    populateUserProfile() {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const userPets = this.state.pets.filter(pet => pet.owner === currentUser.fullName);
+        
+        // Update user pets list
+        const petsList = document.getElementById('user-pets-list');
+        if (petsList) {
+            if (userPets.length > 0) {
+                petsList.innerHTML = userPets.map(pet => `
+                    <div class="card mb-15">
+                        <div class="flex items-center gap-15">
+                            <img src="${pet.image}" alt="${pet.name}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
+                            <div class="flex-1">
+                                <h4 class="m-0">${pet.name}</h4>
+                                <p class="text-muted text-sm">${pet.breed} • ${pet.type}</p>
+                                <p class="text-xs text-muted">ID: ${pet.id}</p>
+                            </div>
+                            <div class="flex gap-10">
+                                <a href="#vaccination-book" class="btn btn-outline btn-sm">Vaccination Book</a>
+                                <a href="#dashboard" class="btn btn-primary btn-sm">View Dashboard</a>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                petsList.innerHTML = `
+                    <div class="text-center py-40">
+                        <i data-lucide="dog" style="width: 48px; height: 48px; margin: 0 auto 15px; opacity: 0.3;"></i>
+                        <p class="text-muted">No pets registered yet.</p>
+                        <a href="#register" class="btn btn-primary mt-15">Register Your First Pet</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Update stats
+        const totalPetsElement = document.getElementById('total-pets');
+        const totalRecordsElement = document.getElementById('total-records');
+        
+        if (totalPetsElement) totalPetsElement.textContent = userPets.length;
+        if (totalRecordsElement) {
+            const totalRecords = userPets.reduce((acc, pet) => acc + (pet.vaccinations?.length || 0), 0);
+            totalRecordsElement.textContent = totalRecords;
         }
     }
 
@@ -316,6 +464,15 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Global logout function
+window.handleLogout = function() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.removeItem('currentUser');
+        alert('You have been logged out successfully.');
+        window.location.hash = '#home';
+    }
+};
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
