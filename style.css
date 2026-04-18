@@ -239,12 +239,28 @@ main {
     padding: 100px 0;
     display: flex;
     align-items: center;
-    background: var(--primary-gradient);
+    background: url('../assets/images/hero-bg.jpg') center/cover no-repeat;
     position: relative;
     overflow: hidden;
 }
 
 .hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 136, 229, 0.9) 0%, rgba(100, 181, 246, 0.8) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero::after {
     content: '';
     position: absolute;
     top: -50%;
@@ -253,9 +269,15 @@ main {
     height: 200%;
     background: radial-gradient(circle, rgba(100, 181, 246, 0.1) 0%, transparent 70%);
     animation: float 20s ease-in-out infinite;
+    z-index: 1;
 }
 
-.hero::after {
+.hero-image {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-image::before {
     content: '';
     position: absolute;
     top: 20%;
@@ -265,6 +287,7 @@ main {
     background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
     border-radius: 50%;
     animation: float 15s ease-in-out infinite reverse;
+    z-index: 1;
 }
 
 @keyframes float {
@@ -498,6 +521,36 @@ main {
     overflow: hidden;
 }
 
+.role-card.pet-owner {
+    background: url('../assets/images/pet-owner-bg.jpg') center/cover no-repeat;
+}
+
+.role-card.veterinarian {
+    background: url('../assets/images/vet-bg.jpg') center/cover no-repeat;
+}
+
+.role-card.pet-owner::before,
+.role-card.veterinarian::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 1;
+}
+
+.role-card.pet-owner:hover::before,
+.role-card.veterinarian:hover::before {
+    background: rgba(255, 255, 255, 0.85);
+}
+
+.role-card > * {
+    position: relative;
+    z-index: 2;
+}
+
 .role-card::before {
     content: '';
     position: absolute;
@@ -617,15 +670,110 @@ main {
     .hero-content.text-center p {
         font-size: 1.1rem;
     }
+    
+    /* Responsive background images */
+    .hero {
+        background-attachment: scroll;
+        background-size: cover;
+    }
+    
+    .vet-dashboard-header {
+        background-attachment: scroll;
+        background-size: cover;
+    }
+    
+    .role-card.pet-owner,
+    .role-card.veterinarian {
+        background-attachment: scroll;
+        background-size: cover;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        padding: 60px 0;
+        background-position: center;
+    }
+    
+    .role-card {
+        padding: 25px 15px;
+    }
+    
+    .hero-content.text-center h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Background Image Styles */
+.bg-image-overlay {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.bg-image-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
+
+.bg-image-overlay > * {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-bg-pattern {
+    background-image: url('../assets/images/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.vet-bg-pattern {
+    background-image: url('../assets/images/vet-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.medical-bg-pattern {
+    background-image: url('../assets/images/medical-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
 }
 
 /* Veterinary Interface Styles */
 .vet-dashboard-header {
-    background: var(--primary-gradient);
+    background: url('../assets/images/vet-bg.jpg') center/cover no-repeat;
     color: white;
     padding: 24px;
     border-radius: var(--radius-lg);
     margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.vet-dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 136, 229, 0.9) 0%, rgba(100, 181, 246, 0.8) 100%);
+    z-index: 1;
+}
+
+.vet-dashboard-header > * {
+    position: relative;
+    z-index: 2;
 }
 
 .vet-badge {

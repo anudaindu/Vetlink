@@ -172,7 +172,7 @@ const RoleSelectionPage = () => {
                 <h1>Welcome to VetLink</h1>
                 <p>Choose your role to access the right features for you</p>
                 <div class="role-selection-grid">
-                    <div class="role-card" onclick="selectRole('pet-owner')">
+                    <div class="role-card pet-owner" onclick="selectRole('pet-owner')">
                         <div class="role-icon">
                             <i data-lucide="users"></i>
                         </div>
@@ -198,7 +198,7 @@ const RoleSelectionPage = () => {
                         </button>
                     </div>
                     
-                    <div class="role-card" onclick="selectRole('veterinarian')">
+                    <div class="role-card veterinarian" onclick="selectRole('veterinarian')">
                         <div class="role-icon vet-icon">
                             <i data-lucide="stethoscope"></i>
                         </div>
