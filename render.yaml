@@ -1,0 +1,6 @@
+services:
+  - type: static
+    name: vetlink
+    rootDir: ./
+    publishPath: ./
+    # Static sites on Render are automatically deployed on every push to the main branch.
