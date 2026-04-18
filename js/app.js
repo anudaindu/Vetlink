@@ -1,4 +1,6 @@
 import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage, VaccinationBookPage } from './pages.js';
+import { mockPets, mockVets } from './data.js';
+import { FirebaseService } from './firebase-service.js';
 
 class VetLinkApp {
     constructor() {
@@ -8,16 +10,28 @@ class VetLinkApp {
         this.navLinksContainer = document.getElementById('nav-links');
         
         this.state = {
-            pets: JSON.parse(localStorage.getItem('vetlink_pets')) || mockPets,
+            pets: mockPets, // Fallback to mock data initially
             vets: mockVets,
             currentUser: null,
-            currentPath: window.location.hash || '#home'
+            currentPath: window.location.hash || '#home',
+            isFirebaseReady: false
         };
 
         this.init();
     }
 
-    init() {
+    async init() {
+        // Initialize Firebase Sync
+        try {
+            FirebaseService.subscribeToPets((pets) => {
+                this.state.pets = pets.length > 0 ? pets : mockPets;
+                this.state.isFirebaseReady = true;
+                this.handleRoute(); // Re-render when data arrives
+            });
+        } catch (error) {
+            console.warn("Firebase not configured, using local mock data.");
+        }
+
         // Handle initial routing
         this.handleRoute();
 
@@ -185,7 +199,7 @@ class VetLinkApp {
         window.location.hash = '#admin-vets';
     }
 
-    handleRegisterPet(e) {
+    async handleRegisterPet(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const newPet = {
@@ -198,18 +212,23 @@ class VetLinkApp {
             microchip: formData.get('microchip'),
             owner: formData.get('ownerName'),
             phone: formData.get('phone'),
-            image: 'https://images.unsplash.com/photo-1543466835-00a732f3b95c?auto=format&fit=crop&q=80&w=200&h=200', // Default placeholder
+            image: 'https://images.unsplash.com/photo-1543466835-00a732f3b95c?auto=format&fit=crop&q=80&w=200&h=200',
             vaccinations: [],
             reminders: []
         };
 
-        this.state.pets.unshift(newPet);
-        this.saveState();
-        alert('Pet Registered Successfully!');
+        try {
+            await FirebaseService.addPet(newPet);
+            alert('Pet Registered Successfully (Cloud Synced)!');
+        } catch (error) {
+            this.state.pets.unshift(newPet); // Local fallback
+            alert('Pet Registered locally (Firebase not configured)');
+        }
+        
         window.location.hash = '#dashboard';
     }
 
-    handleAddVaccination(e) {
+    async handleAddVaccination(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
         const newRecord = {
@@ -224,10 +243,16 @@ class VetLinkApp {
             status: 'done'
         };
 
-        // For MVP, we add to the first pet
-        this.state.pets[0].vaccinations.unshift(newRecord);
-        this.saveState();
-        alert('Vaccination record added to book!');
+        try {
+            // For MVP, we add to the first pet
+            const targetPetId = this.state.pets[0].id;
+            await FirebaseService.addVaccinationRecord(targetPetId, newRecord);
+            alert('Vaccination record added to cloud!');
+        } catch (error) {
+            this.state.pets[0].vaccinations.unshift(newRecord);
+            alert('Record saved locally (Firebase not configured)');
+        }
+        
         window.location.hash = '#vaccination-book';
     }
 
@@ -261,9 +286,6 @@ class VetLinkApp {
         }
     }
 
-    saveState() {
-        localStorage.setItem('vetlink_pets', JSON.stringify(this.state.pets));
-    }
 }
 
 // Mobile Menu specific CSS to be injected if not already in style.css
