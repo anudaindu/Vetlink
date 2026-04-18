@@ -589,7 +589,7 @@ main {
 }
 
 .role-card p {
-    color: var(--text-muted);
+    color: var(--text-main);
     margin-bottom: 30px;
     line-height: 1.6;
 }
