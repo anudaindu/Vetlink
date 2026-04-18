@@ -522,11 +522,11 @@ main {
 }
 
 .role-card.pet-owner {
-    background: url('../assets/images/pet-owner-bg.jpg') center/cover no-repeat;
+    background: url('../assets/images/happy-female-vet-smiling-petting-beautiful-beagle-dog-exam-table-professional-veterinarian-man-holding-pet-while-examining-healthy-pet-clinic.jpg') center/cover no-repeat;
 }
 
 .role-card.veterinarian {
-    background: url('../assets/images/vet-bg.jpg') center/cover no-repeat;
+    background: url('../assets/images/dog-being-checked-by-vet-pet-shop.jpg') center/cover no-repeat;
 }
 
 .role-card.pet-owner::before,
@@ -537,13 +537,15 @@ main {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.75);
     z-index: 1;
+    backdrop-filter: blur(8px);
 }
 
 .role-card.pet-owner:hover::before,
 .role-card.veterinarian:hover::before {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
 }
 
 .role-card > * {
@@ -568,8 +570,8 @@ main {
 }
 
 .role-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 30px 60px -15px rgba(30, 136, 229, 0.25);
     border-color: var(--primary);
 }
 
