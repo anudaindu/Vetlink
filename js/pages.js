@@ -69,6 +69,8 @@ export const RegisterPetPage = () => `
                         })}
                         ${Input({ label: 'Breed', id: 'breed', name: 'breed', placeholder: 'e.g. Golden Retriever', required: true })}
                         ${Input({ label: 'Date of Birth', id: 'dob', name: 'dob', type: 'date', required: true })}
+                        ${Input({ label: 'Color / Markings', id: 'color', name: 'color', placeholder: 'e.g. Brown with white chest' })}
+                        ${Input({ label: 'Microchip Number (Optional)', id: 'microchip', name: 'microchip', placeholder: '15-digit number' })}
                         ${Input({ label: 'Owner Name', id: 'ownerName', name: 'ownerName', placeholder: 'Your Name', required: true })}
                         ${Input({ label: 'Phone Number', id: 'phone', name: 'phone', placeholder: '07X XXX XXXX', required: true })}
                     </div>
@@ -82,7 +84,7 @@ export const RegisterPetPage = () => `
 `;
 
 export const DashboardPage = (pets) => {
-    const selectedPet = pets[0]; // Simplified for MVP
+    const selectedPet = pets[0];
     
     return `
         <div class="container page-container py-40">
@@ -93,53 +95,49 @@ export const DashboardPage = (pets) => {
                             <img src="${selectedPet.image}" alt="${selectedPet.name}">
                         </div>
                         <div class="pet-info">
-                            <h2>${selectedPet.name}</h2>
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="m-0">${selectedPet.name}</h2>
+                                <span class="pet-id-tag">ID: ${selectedPet.id}</span>
+                            </div>
                             <p>${selectedPet.breed} • ${selectedPet.type}</p>
                             <div class="pet-stats">
                                 <div><strong>DOB:</strong> ${selectedPet.dob}</div>
                                 <div><strong>Owner:</strong> ${selectedPet.owner}</div>
                             </div>
                         </div>
-                        <a href="#add-vaccination" class="btn btn-primary btn-sm w-full mt-20">
-                            <i data-lucide="plus"></i> Add Vaccination
+                    </div>
+
+                    <div class="card mt-20">
+                        <h3 class="flex items-center gap-10">
+                            <i data-lucide="book-open" class="text-primary"></i>
+                            Vaccination Book
+                        </h3>
+                        <p class="text-muted text-sm mb-20">Access and manage ${selectedPet.name}'s digital health certificate.</p>
+                        <a href="#vaccination-book" class="btn btn-primary w-full">
+                            Open Vaccination Book
                         </a>
                     </div>
                 </aside>
 
                 <main class="dashboard-main">
                     <div class="card mb-30">
-                        <div class="flex justify-between items-center mb-20">
-                            <h3>Vaccination Records</h3>
-                            <span class="text-muted text-sm">${selectedPet.vaccinations.length} records found</span>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Vaccine Name</th>
-                                        <th>Date Given</th>
-                                        <th>Next Due</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${selectedPet.vaccinations.map(v => `
-                                        <tr>
-                                            <td><strong>${v.name}</strong></td>
-                                            <td>${v.date}</td>
-                                            <td>${v.nextDue}</td>
-                                            <td><span class="status-badge status-${v.status}">${v.status === 'done' ? 'Completed' : 'Due'}</span></td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                        <h3>Summary</h3>
+                        <div class="stats-mini-grid mt-20">
+                            <div class="stat-mini">
+                                <span class="label">Last Vaccination</span>
+                                <span class="value">${selectedPet.vaccinations[0]?.date || 'None'}</span>
+                            </div>
+                            <div class="stat-mini">
+                                <span class="label">Records</span>
+                                <span class="value">${selectedPet.vaccinations.length}</span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="card">
                         <h3>Upcoming Reminders</h3>
                         <div class="reminder-list mt-20">
-                            ${selectedPet.reminders.map(r => `
+                            ${selectedPet.reminders.length > 0 ? selectedPet.reminders.map(r => `
                                 <div class="reminder-item">
                                     <div class="reminder-icon"><i data-lucide="calendar"></i></div>
                                     <div class="reminder-text">
@@ -148,8 +146,9 @@ export const DashboardPage = (pets) => {
                                     </div>
                                     <button class="btn btn-icon"><i data-lucide="check"></i></button>
                                 </div>
-                            `).join('')}
+                            `).join('') : '<p class="text-muted">No upcoming reminders.</p>'}
                         </div>
+                        <a href="#vets" class="btn btn-outline w-full mt-20">Find a Vet Nearby</a>
                     </div>
                 </main>
             </div>
@@ -159,35 +158,166 @@ export const DashboardPage = (pets) => {
 
 export const AddVaccinationPage = () => `
     <div class="container page-container">
-        <div class="auth-card-container">
+        <div class="auth-card-container width-600">
             <div class="card">
                 <div class="flex items-center gap-10 mb-20">
-                    <a href="#dashboard" class="text-primary"><i data-lucide="arrow-left"></i></a>
+                    <a href="#vaccination-book" class="text-primary"><i data-lucide="arrow-left"></i></a>
                     <h2 class="m-0">Add Vaccination Record</h2>
                 </div>
                 <form id="add-vaccination-form">
-                    ${Input({ 
-                        label: 'Vaccine Name', 
-                        id: 'vaccineName', 
-                        name: 'vaccineName', 
-                        options: vaccineTypes, 
-                        placeholder: 'Select vaccine', 
-                        required: true 
-                    })}
-                    ${Input({ label: 'Date Given', id: 'dateGiven', name: 'dateGiven', type: 'date', required: true })}
-                    ${Input({ label: 'Next Due Date', id: 'nextDue', name: 'nextDue', type: 'date', required: true })}
-                    <div class="form-group">
+                    <div class="form-grid">
+                        ${Input({ 
+                            label: 'Vaccine Name', 
+                            id: 'vaccineName', 
+                            name: 'vaccineName', 
+                            options: vaccineTypes, 
+                            placeholder: 'Select vaccine', 
+                            required: true 
+                        })}
+                        ${Input({ label: 'Date Given', id: 'dateGiven', name: 'dateGiven', type: 'date', required: true })}
+                        ${Input({ label: 'Next Due Date', id: 'nextDue', name: 'nextDue', type: 'date', required: true })}
+                        ${Input({ label: 'Batch / Lot Number', id: 'batchNumber', name: 'batchNumber', placeholder: 'e.g. B-1234' })}
+                        ${Input({ label: 'Vet Name', id: 'vetName', name: 'vetName', placeholder: 'Dr. John Doe', required: true })}
+                        ${Input({ label: 'Clinic Name', id: 'clinicName', name: 'clinicName', placeholder: 'City Vet Clinic', required: true })}
+                    </div>
+                    <div class="form-group mt-15">
                         <label for="notes">Notes</label>
                         <textarea id="notes" name="notes" class="form-input" rows="3" placeholder="Additional details..."></textarea>
                     </div>
                     <div class="form-actions mt-20">
-                        <button type="submit" class="btn btn-primary w-full">Save Vaccination Record</button>
+                        <button type="submit" class="btn btn-primary w-full">Save Record</button>
+                        <a href="#vaccination-book" class="btn btn-outline w-full mt-10">Cancel</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 `;
+
+export const VaccinationBookPage = (pet) => {
+    const today = new Date();
+    const upcoming = pet.vaccinations
+        .filter(v => new Date(v.nextDue) >= today)
+        .sort((a,b) => new Date(a.nextDue) - new Date(b.nextDue));
+    
+    const overdue = pet.vaccinations
+        .filter(v => new Date(v.nextDue) < today);
+
+    return `
+        <div class="container page-container py-40">
+            <div class="flex items-center gap-15 mb-30">
+                <a href="#dashboard" class="btn btn-icon-sm"><i data-lucide="arrow-left"></i></a>
+                <h1 class="m-0">Digital Vaccination Book</h1>
+            </div>
+
+            <div class="vac-certificate card">
+                <div class="cert-header">
+                    <div class="flex justify-between items-start">
+                        <div class="cert-title">
+                            <h2>CERTIFICATE OF VACCINATION</h2>
+                            <p class="text-sm">International Standard Pet Health Record</p>
+                        </div>
+                        <div class="cert-id">
+                            <span class="label">PET ID</span>
+                            <span class="value">${pet.id}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cert-section">
+                    <h3 class="flex items-center gap-10">
+                        <i data-lucide="dog" class="text-primary size-20"></i>
+                        Pet Information
+                    </h3>
+                    <div class="info-grid mt-20">
+                        <div class="info-item"><span class="label">Name</span><span class="value">${pet.name}</span></div>
+                        <div class="info-item"><span class="label">Species</span><span class="value">${pet.type}</span></div>
+                        <div class="info-item"><span class="label">Breed</span><span class="value">${pet.breed}</span></div>
+                        <div class="info-item"><span class="label">Date of Birth</span><span class="value">${pet.dob}</span></div>
+                        <div class="info-item"><span class="label">Color / Markings</span><span class="value">${pet.color || 'Not specified'}</span></div>
+                        <div class="info-item"><span class="label">Microchip No.</span><span class="value">${pet.microchip || 'N/A'}</span></div>
+                    </div>
+                </div>
+
+                <div class="cert-section no-border">
+                    <div class="flex justify-between items-center mb-20">
+                        <h3 class="flex items-center gap-10">
+                            <i data-lucide="syringe" class="text-primary size-20"></i>
+                            Vaccination Records
+                        </h3>
+                        <a href="#add-vaccination" class="btn btn-primary btn-sm">
+                            <i data-lucide="plus"></i> Add Record
+                        </a>
+                    </div>
+
+                    <div class="table-container medical-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Vaccine</th>
+                                    <th>Date</th>
+                                    <th>Next Due</th>
+                                    <th>Batch #</th>
+                                    <th>Vet / Clinic</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${pet.vaccinations.length > 0 ? pet.vaccinations.map(v => `
+                                    <tr>
+                                        <td><strong>${v.name}</strong></td>
+                                        <td>${v.date}</td>
+                                        <td>${v.nextDue}</td>
+                                        <td><code class="text-sm">${v.batchNumber || '—'}</code></td>
+                                        <td>
+                                            <div class="text-sm">${v.vetName || '—'}</div>
+                                            <div class="text-xs text-muted">${v.clinicName || '—'}</div>
+                                        </td>
+                                        <td><span class="text-xs text-muted">${v.notes || '—'}</span></td>
+                                    </tr>
+                                `).join('') : '<tr><td colspan="6" class="text-center py-20 text-muted">No vaccination records found.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2 mt-30">
+                <div class="card">
+                    <h3>Upcoming Vaccinations</h3>
+                    <div class="reminder-list mt-20">
+                        ${upcoming.length > 0 ? upcoming.map(u => `
+                            <div class="reminder-item">
+                                <div class="reminder-icon"><i data-lucide="calendar"></i></div>
+                                <div class="reminder-text">
+                                    <h4>${u.name}</h4>
+                                    <p>Due: ${u.nextDue}</p>
+                                </div>
+                                <span class="status-badge status-due">Upcoming</span>
+                            </div>
+                        `).join('') : '<p class="text-muted">No upcoming vaccinations.</p>'}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Alerts & Overdue</h3>
+                    <div class="reminder-list mt-20">
+                        ${overdue.length > 0 ? overdue.map(o => `
+                            <div class="reminder-item">
+                                <div class="reminder-icon bg-danger-light"><i data-lucide="alert-triangle" class="text-danger"></i></div>
+                                <div class="reminder-text">
+                                    <h4>${o.name}</h4>
+                                    <p class="text-danger font-bold">OVERDUE since ${o.nextDue}</p>
+                                </div>
+                                <a href="#vets" class="btn btn-outline btn-sm">Book Vet</a>
+                            </div>
+                        `).join('') : '<p class="text-success flex items-center gap-10"><i data-lucide="check-circle" class="size-20"></i> All vaccinations up to date!</p>'}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
 
 export const FindVetPage = (vets) => `
     <div class="container page-container py-40">

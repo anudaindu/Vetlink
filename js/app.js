@@ -1,4 +1,4 @@
-import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage } from './pages.js';
+import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage, VaccinationBookPage } from './pages.js';
 
 class VetLinkApp {
     constructor() {
@@ -98,6 +98,9 @@ class VetLinkApp {
             case 'admin-add-vet':
                 html = AdminAddVetPage();
                 break;
+            case 'vaccination-book':
+                html = VaccinationBookPage(this.state.pets[0]); // Simplified to first pet for MVP
+                break;
             default:
                 html = HomePage();
         }
@@ -186,11 +189,13 @@ class VetLinkApp {
         e.preventDefault();
         const formData = new FormData(e.target);
         const newPet = {
-            id: Date.now().toString(),
+            id: `VL-${Math.floor(1000 + Math.random() * 9000)}`,
             name: formData.get('petName'),
             type: formData.get('petType'),
             breed: formData.get('breed'),
             dob: formData.get('dob'),
+            color: formData.get('color'),
+            microchip: formData.get('microchip'),
             owner: formData.get('ownerName'),
             phone: formData.get('phone'),
             image: 'https://images.unsplash.com/photo-1543466835-00a732f3b95c?auto=format&fit=crop&q=80&w=200&h=200', // Default placeholder
@@ -200,7 +205,7 @@ class VetLinkApp {
 
         this.state.pets.unshift(newPet);
         this.saveState();
-        alert('Pet registered successfully!');
+        alert('Pet Registered Successfully!');
         window.location.hash = '#dashboard';
     }
 
@@ -212,14 +217,18 @@ class VetLinkApp {
             name: formData.get('vaccineName'),
             date: formData.get('dateGiven'),
             nextDue: formData.get('nextDue'),
+            batchNumber: formData.get('batchNumber'),
+            vetName: formData.get('vetName'),
+            clinicName: formData.get('clinicName'),
+            notes: formData.get('notes'),
             status: 'done'
         };
 
         // For MVP, we add to the first pet
         this.state.pets[0].vaccinations.unshift(newRecord);
         this.saveState();
-        alert('Vaccination record added!');
-        window.location.hash = '#dashboard';
+        alert('Vaccination record added to book!');
+        window.location.hash = '#vaccination-book';
     }
 
     handleVetSearch(e) {

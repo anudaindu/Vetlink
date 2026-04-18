@@ -1,21 +1,22 @@
 export const mockPets = [
     {
-        id: '1',
-        name: 'Buddy',
+        id: 'PET-101',
+        name: 'Max',
         type: 'Dog',
         breed: 'Golden Retriever',
-        dob: '2021-05-15',
+        dob: '2022-05-15',
         owner: 'Anuda H',
-        phone: '0771234567',
+        phone: '077 123 4567',
+        color: 'Golden',
+        microchip: '985112345678901',
         image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=200&h=200',
         vaccinations: [
-            { id: 'v1', name: 'Rabies', date: '2023-01-10', nextDue: '2024-01-10', status: 'done' },
-            { id: 'v2', name: 'Parvovirus', date: '2023-03-22', nextDue: '2024-03-22', status: 'done' },
-            { id: 'v3', name: 'Distemper', date: '2023-03-22', nextDue: '2024-03-22', status: 'done' }
+            { id: '1', name: 'Rabies', date: '2023-10-10', nextDue: '2024-10-10', status: 'done', batchNumber: 'RB-9921', vetName: 'Dr. Silva', clinicName: 'Central Vet', notes: 'Annua Booster' },
+            { id: '2', name: 'DHPP', date: '2023-08-15', nextDue: '2024-08-15', status: 'done', batchNumber: 'DH-1102', vetName: 'Dr. Silva', clinicName: 'Central Vet', notes: 'Ready for next year' }
         ],
         reminders: [
-            { id: 'r1', title: 'Heartworm Pill', date: '2024-04-20', type: 'Medication' },
-            { id: 'r2', title: 'Annual Checkup', date: '2024-05-15', type: 'Vet Visit' }
+            { id: '1', title: 'Rabies Booster', date: '2024-10-10', type: 'Vaccination' },
+            { id: '2', title: 'Flea Treatment', date: '2024-04-20', type: 'Medicine' }
         ]
     },
     {
