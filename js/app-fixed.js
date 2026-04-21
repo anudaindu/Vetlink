@@ -999,6 +999,15 @@ class VetLinkApp {
             case 'vets':
                 html = FindVetPage(this.state.vets);
                 break;
+            case 'booking':
+                html = BookingPage();
+                break;
+            case 'vet-dashboard':
+                html = VetBookingDashboardPage();
+                break;
+            case 'vet-settings':
+                html = VetSettingsPage();
+                break;
             case 'login':
                 html = LoginPage();
                 break;
@@ -1089,6 +1098,22 @@ class VetLinkApp {
 
         if (path === 'profile') {
             this.populateUserProfile();
+        }
+
+        if (path === 'booking') {
+            const form = document.getElementById('booking-form');
+            if (form) {
+                form.addEventListener('submit', (e) => this.handleBookingForm(e));
+            }
+            // Setup booking form listeners for real-time updates
+            this.setupBookingFormListeners();
+        }
+
+        if (path === 'vet-settings') {
+            const form = document.getElementById('vet-settings-form');
+            if (form) {
+                form.addEventListener('submit', (e) => this.handleVetSettings(e));
+            }
         }
     }
 
@@ -1332,6 +1357,228 @@ class VetLinkApp {
             lucide.createIcons();
         }
     }
+
+    // Booking System Methods
+    handleBookingForm(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const pets = JSON.parse(localStorage.getItem('pets') || '[]');
+        
+        // Get selected pet
+        const petId = formData.get('petId');
+        const pet = pets.find(p => p.id === petId);
+        
+        if (!pet) {
+            alert('Please select a pet for the booking.');
+            return;
+        }
+        
+        // Check if booking time is emergency (10 PM - 6 AM)
+        const bookingTime = formData.get('time');
+        const bookingHour = parseInt(bookingTime.split(':')[0]);
+        const isEmergency = bookingHour >= 22 || bookingHour < 6;
+        
+        // Calculate total cost
+        const baseFee = 2000;
+        const visitType = formData.get('visitType');
+        const transportFee = visitType === 'home' ? 500 : 0;
+        const emergencyFee = isEmergency ? 1500 : 0;
+        const totalCost = baseFee + transportFee + emergencyFee;
+        
+        // Create booking request
+        const bookingRequest = {
+            id: 'BK-' + Date.now(),
+            petId: petId,
+            petName: pet.name,
+            petType: pet.type,
+            ownerId: currentUser.fullName,
+            ownerName: currentUser.fullName,
+            ownerPhone: currentUser.phone || '077 123 4567',
+            ownerEmail: currentUser.email,
+            visitType: visitType,
+            date: formData.get('date'),
+            time: bookingTime,
+            location: formData.get('location'),
+            notes: formData.get('notes'),
+            isEmergency: isEmergency,
+            baseFee: baseFee,
+            transportFee: transportFee,
+            emergencyFee: emergencyFee,
+            totalCost: totalCost,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            assignedVetId: null
+        };
+        
+        // Save booking request
+        let bookingRequests = JSON.parse(localStorage.getItem('bookingRequests') || '[]');
+        bookingRequests.push(bookingRequest);
+        localStorage.setItem('bookingRequests', JSON.stringify(bookingRequests));
+        
+        // Show success message
+        alert(`Booking request sent successfully! Total cost: LKR ${totalCost}. You will be notified when a veterinarian accepts your request.`);
+        
+        // Redirect to dashboard
+        window.location.hash = '#dashboard';
+    }
+
+    handleVetSettings(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const currentVet = JSON.parse(localStorage.getItem('currentVet') || '{}');
+        
+        // Update vet settings
+        const updatedVet = {
+            ...currentVet,
+            acceptsHomeVisits: formData.get('acceptsHomeVisits') === 'on',
+            acceptsClinicVisits: formData.get('acceptsClinicVisits') === 'on',
+            emergencyAvailability: formData.get('emergencyAvailability') === 'on',
+            workStart: formData.get('workStart'),
+            workEnd: formData.get('workEnd'),
+            baseFee: parseInt(formData.get('baseFee')),
+            transportFee: parseInt(formData.get('transportFee')),
+            emergencyFee: parseInt(formData.get('emergencyFee'))
+        };
+        
+        // Update in mockVets array
+        const vetIndex = mockVets.findIndex(v => v.id === currentVet.id);
+        if (vetIndex !== -1) {
+            mockVets[vetIndex] = { ...mockVets[vetIndex], ...updatedVet };
+        }
+        
+        // Update localStorage
+        localStorage.setItem('currentVet', JSON.stringify(updatedVet));
+        
+        alert('Availability settings saved successfully!');
+        window.location.hash = '#vet-dashboard';
+    }
+
+    setupBookingFormListeners() {
+        // Visit type change handler
+        const visitTypeSelect = document.getElementById('visitType');
+        if (visitTypeSelect) {
+            visitTypeSelect.addEventListener('change', (e) => {
+                this.updateBookingAlerts();
+                this.updatePricing();
+            });
+        }
+        
+        // Time change handler for emergency detection
+        const timeInput = document.getElementById('bookingTime');
+        if (timeInput) {
+            timeInput.addEventListener('change', () => {
+                this.updateBookingAlerts();
+                this.updatePricing();
+            });
+        }
+        
+        // Date change handler
+        const dateInput = document.getElementById('bookingDate');
+        if (dateInput) {
+            dateInput.addEventListener('change', () => {
+                this.updateBookingAlerts();
+            });
+        }
+    }
+
+    updateBookingAlerts() {
+        const alertsDiv = document.getElementById('booking-alerts');
+        const visitType = document.getElementById('visitType')?.value;
+        const bookingTime = document.getElementById('bookingTime')?.value;
+        const bookingDate = document.getElementById('bookingDate')?.value;
+        
+        if (!alertsDiv || !visitType || !bookingTime) return;
+        
+        const alerts = [];
+        
+        // Home visit alert
+        if (visitType === 'home') {
+            alerts.push(`
+                <div class="booking-alert info">
+                    <i data-lucide="home"></i>
+                    <span>Additional transport charges may apply for home visits</span>
+                </div>
+            `);
+        }
+        
+        // Emergency alert
+        if (bookingTime) {
+            const bookingHour = parseInt(bookingTime.split(':')[0]);
+            const isEmergency = bookingHour >= 22 || bookingHour < 6;
+            
+            if (isEmergency) {
+                alerts.push(`
+                    <div class="booking-alert danger">
+                        <i data-lucide="alert-triangle"></i>
+                        <span>Emergency booking (10 PM - 6 AM) - Emergency charges will apply</span>
+                    </div>
+                `);
+            }
+        }
+        
+        // Date validation
+        if (bookingDate) {
+            const selectedDate = new Date(bookingDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                alerts.push(`
+                    <div class="booking-alert warning">
+                        <i data-lucide="calendar"></i>
+                        <span>Cannot book for past dates. Please select a future date.</span>
+                    </div>
+                `);
+            }
+        }
+        
+        alertsDiv.innerHTML = alerts.join('');
+        lucide.createIcons();
+    }
+
+    updatePricing() {
+        const pricingDiv = document.getElementById('pricing-breakdown');
+        const visitType = document.getElementById('visitType')?.value;
+        const bookingTime = document.getElementById('bookingTime')?.value;
+        
+        if (!pricingDiv || !visitType || !bookingTime) return;
+        
+        const baseFee = 2000;
+        const transportFee = visitType === 'home' ? 500 : 0;
+        
+        // Check if emergency
+        const bookingHour = parseInt(bookingTime.split(':')[0]);
+        const isEmergency = bookingHour >= 22 || bookingHour < 6;
+        const emergencyFee = isEmergency ? 1500 : 0;
+        
+        const totalCost = baseFee + transportFee + emergencyFee;
+        
+        // Update pricing display
+        document.getElementById('base-fee').textContent = `LKR ${baseFee}`;
+        document.getElementById('total-cost').textContent = `LKR ${totalCost}`;
+        
+        // Show/hide transport fee row
+        const transportRow = document.getElementById('transport-fee-row');
+        if (transportRow) {
+            transportRow.style.display = transportFee > 0 ? 'flex' : 'none';
+            if (transportFee > 0) {
+                document.getElementById('transport-fee').textContent = `LKR ${transportFee}`;
+            }
+        }
+        
+        // Show/hide emergency fee row
+        const emergencyRow = document.getElementById('emergency-fee-row');
+        if (emergencyRow) {
+            emergencyRow.style.display = emergencyFee > 0 ? 'flex' : 'none';
+            if (emergencyFee > 0) {
+                document.getElementById('emergency-fee').textContent = `LKR ${emergencyFee}`;
+            }
+        }
+        
+        // Show pricing breakdown
+        pricingDiv.style.display = 'block';
+    }
 }
 
 window.handleLogout = function() {
@@ -1392,6 +1639,60 @@ window.selectRole = function(role) {
         // Direct to pet owner interface
         window.location.hash = '#login';
     }
+};
+
+// Booking System Global Functions
+window.acceptBooking = function(bookingId) {
+    const currentVet = JSON.parse(localStorage.getItem('currentVet') || '{}');
+    const bookingRequests = JSON.parse(localStorage.getItem('bookingRequests') || '[]');
+    
+    const bookingIndex = bookingRequests.findIndex(req => req.id === bookingId);
+    if (bookingIndex === -1) {
+        alert('Booking request not found.');
+        return;
+    }
+    
+    // Update booking status
+    bookingRequests[bookingIndex].status = 'accepted';
+    bookingRequests[bookingIndex].assignedVetId = currentVet.id;
+    bookingRequests[bookingIndex].assignedVetName = currentVet.name;
+    bookingRequests[bookingIndex].assignedVetClinic = currentVet.clinic;
+    bookingRequests[bookingIndex].assignedVetPhone = currentVet.phone;
+    bookingRequests[bookingIndex].acceptedAt = new Date().toISOString();
+    
+    // Save updated booking requests
+    localStorage.setItem('bookingRequests', JSON.stringify(bookingRequests));
+    
+    alert(`Booking accepted! Contact ${bookingRequests[bookingIndex].ownerName} at ${bookingRequests[bookingIndex].ownerPhone}.`);
+    
+    // Refresh the vet dashboard
+    window.location.hash = '#vet-dashboard';
+};
+
+window.rejectBooking = function(bookingId) {
+    if (!confirm('Are you sure you want to reject this booking request?')) {
+        return;
+    }
+    
+    const bookingRequests = JSON.parse(localStorage.getItem('bookingRequests') || '[]');
+    
+    const bookingIndex = bookingRequests.findIndex(req => req.id === bookingId);
+    if (bookingIndex === -1) {
+        alert('Booking request not found.');
+        return;
+    }
+    
+    // Update booking status
+    bookingRequests[bookingIndex].status = 'rejected';
+    bookingRequests[bookingIndex].rejectedAt = new Date().toISOString();
+    
+    // Save updated booking requests
+    localStorage.setItem('bookingRequests', JSON.stringify(bookingRequests));
+    
+    alert('Booking request rejected.');
+    
+    // Refresh the vet dashboard
+    window.location.hash = '#vet-dashboard';
 };
 
 const style = document.createElement('style');

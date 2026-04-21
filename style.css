@@ -1415,6 +1415,183 @@ textarea.form-input {
     100% { transform: rotate(360deg); }
 }
 
+/* Booking System Styles */
+.booking-request-card {
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.booking-request-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.booking-request-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 15px;
+}
+
+.booking-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.bg-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.bg-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.booking-details {
+    background: var(--surface);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+}
+
+.booking-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.pricing-details {
+    font-size: 0.9rem;
+}
+
+.border-top {
+    border-top: 1px solid var(--border);
+}
+
+/* Checkbox Styles */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 500;
+    position: relative;
+    padding-left: 25px;
+}
+
+.checkbox-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkmark {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 20px;
+    width: 20px;
+    background-color: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-label:hover input ~ .checkmark {
+    border-color: var(--primary);
+}
+
+.checkbox-label input:checked ~ .checkmark {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-label input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Form Sections */
+.form-section {
+    padding: 20px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.form-section h4 {
+    color: var(--primary);
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+/* Alert Styles */
+.booking-alert {
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.booking-alert.info {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.booking-alert.warning {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.booking-alert.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #ef4444;
+}
+
+/* Responsive Booking */
+@media (max-width: 768px) {
+    .booking-actions {
+        flex-direction: column;
+    }
+    
+    .booking-actions .btn {
+        width: 100%;
+    }
+    
+    .booking-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+}
+
 /* Pet Dashboard Enhancements */
 .pet-id-tag {
     background: #f1f5f9;

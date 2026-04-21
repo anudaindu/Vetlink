@@ -1,5 +1,7 @@
 import { vaccineTypes, mockVets, cities } from './data.js';
 
+// Booking System Components
+
 export const HomePage = () => `
     <section class="hero">
         <div class="container hero-container">
@@ -238,6 +240,17 @@ export const DashboardPage = (pets) => {
                         <p class="text-muted text-sm mb-20">Access and manage ${selectedPet.name}'s digital health certificate.</p>
                         <a href="#vaccination-book" class="btn btn-primary w-full">
                             Open Vaccination Book
+                        </a>
+                    </div>
+
+                    <div class="card mt-20">
+                        <h3 class="flex items-center gap-10">
+                            <i data-lucide="calendar" class="text-primary"></i>
+                            Book Appointment
+                        </h3>
+                        <p class="text-muted text-sm mb-20">Request a veterinary consultation for your pet.</p>
+                        <a href="#booking" class="btn btn-outline w-full">
+                            <i data-lucide="plus"></i> Book Vet Visit
                         </a>
                     </div>
                 </aside>
@@ -637,6 +650,267 @@ export const AdminManageVetsPage = (vets) => AdminLayout(`
         </div>
     </div>
 `, 'vets');
+
+export const BookingPage = () => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const pets = JSON.parse(localStorage.getItem('pets') || '[]');
+    const userPets = pets.filter(pet => pet.owner === currentUser.fullName);
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="auth-card-container">
+                <div class="card">
+                    <div class="text-center mb-30">
+                        <h2>Book Veterinary Consultation</h2>
+                        <p class="text-muted">Request professional veterinary care for your pet</p>
+                    </div>
+                    
+                    <form id="booking-form">
+                        <div class="form-grid">
+                            ${Input({ 
+                                label: 'Select Pet', 
+                                id: 'petSelect', 
+                                name: 'petId', 
+                                options: userPets.map(pet => ({ value: pet.id, label: `${pet.name} (${pet.type})` })),
+                                placeholder: 'Choose your pet', 
+                                required: true 
+                            })}
+                            
+                            ${Input({ 
+                                label: 'Visit Type', 
+                                id: 'visitType', 
+                                name: 'visitType', 
+                                options: [
+                                    { value: 'home', label: 'Home Visit' },
+                                    { value: 'clinic', label: 'Clinic Visit' }
+                                ],
+                                placeholder: 'Select visit type', 
+                                required: true 
+                            })}
+                            
+                            ${Input({ label: 'Preferred Date', id: 'bookingDate', name: 'date', type: 'date', required: true })}
+                            ${Input({ label: 'Preferred Time', id: 'bookingTime', name: 'time', type: 'time', required: true })}
+                            
+                            ${Input({ 
+                                label: 'Location', 
+                                id: 'bookingLocation', 
+                                name: 'location', 
+                                placeholder: currentUser.location || 'Enter your location',
+                                required: true 
+                            })}
+                        </div>
+                        
+                        <div class="form-group mt-20">
+                            <label for="problemDescription">Problem Description / Notes</label>
+                            <textarea id="problemDescription" name="notes" class="form-input" rows="4" 
+                                placeholder="Describe your pet's symptoms or reason for visit..." required></textarea>
+                        </div>
+                        
+                        <div id="booking-alerts" class="mt-20">
+                            <!-- Dynamic alerts will be shown here -->
+                        </div>
+                        
+                        <div id="pricing-breakdown" class="card mt-20" style="display: none;">
+                            <h4>Cost Breakdown</h4>
+                            <div class="pricing-details mt-15">
+                                <div class="flex justify-between mb-10">
+                                    <span>Base Consultation Fee:</span>
+                                    <span id="base-fee">LKR 2,000</span>
+                                </div>
+                                <div class="flex justify-between mb-10" id="transport-fee-row" style="display: none;">
+                                    <span>Home Visit Transport Fee:</span>
+                                    <span id="transport-fee">LKR 500</span>
+                                </div>
+                                <div class="flex justify-between mb-10" id="emergency-fee-row" style="display: none;">
+                                    <span>Emergency Fee:</span>
+                                    <span id="emergency-fee">LKR 1,500</span>
+                                </div>
+                                <div class="border-top pt-10 mt-10">
+                                    <div class="flex justify-between font-bold">
+                                        <span>Total Cost:</span>
+                                        <span id="total-cost">LKR 2,000</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions mt-30">
+                            <button type="submit" class="btn btn-primary w-full">
+                                <i data-lucide="send"></i> Send Booking Request
+                            </button>
+                            <a href="#dashboard" class="btn btn-outline w-full mt-10">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+export const VetBookingDashboardPage = () => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const bookingRequests = JSON.parse(localStorage.getItem('bookingRequests') || '[]');
+    const pendingRequests = bookingRequests.filter(req => req.status === 'pending');
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="dashboard-layout">
+                <aside class="dashboard-sidebar">
+                    <div class="card">
+                        <div class="text-center">
+                            <div class="avatar" style="width: 80px; height: 80px; margin: 0 auto 20px; font-size: 2rem;">
+                                ${currentUser.fullName?.charAt(0).toUpperCase() || 'V'}
+                            </div>
+                            <h3>${currentUser.fullName || 'Dr. Vet'}</h3>
+                            <p class="text-muted">${currentUser.clinic || 'Veterinary Clinic'}</p>
+                        </div>
+                    </div>
+
+                    <div class="card mt-20">
+                        <h4>Availability Settings</h4>
+                        <div class="mt-15">
+                            <a href="#vet-settings" class="btn btn-outline w-full">
+                                <i data-lucide="settings"></i> Configure Settings
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+
+                <main class="dashboard-main">
+                    <div class="card mb-30">
+                        <div class="flex justify-between items-center">
+                            <h3>Incoming Booking Requests</h3>
+                            <span class="status-badge status-due">${pendingRequests.length} Pending</span>
+                        </div>
+                        <p class="text-muted text-sm mt-10">Review and respond to booking requests from pet owners.</p>
+                    </div>
+
+                    <div class="booking-requests-list" id="booking-requests">
+                        ${pendingRequests.length > 0 ? pendingRequests.map(request => `
+                            <div class="card booking-request-card mb-20">
+                                <div class="booking-request-header">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="mb-5">Request from ${request.ownerName}</h4>
+                                            <div class="booking-meta">
+                                                <span class="badge ${request.isEmergency ? 'bg-danger' : 'bg-primary'}">
+                                                    ${request.isEmergency ? 'Emergency' : 'Regular'}
+                                                </span>
+                                                <span class="text-sm text-muted ml-10">
+                                                    ${request.visitType === 'home' ? 'Home Visit' : 'Clinic Visit'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span class="status-badge status-due">Pending</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="booking-details mt-20">
+                                    <div class="grid-2">
+                                        <div>
+                                            <p class="text-sm"><strong>Pet:</strong> ${request.petName}</p>
+                                            <p class="text-sm"><strong>Date:</strong> ${request.date}</p>
+                                            <p class="text-sm"><strong>Time:</strong> ${request.time}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm"><strong>Location:</strong> ${request.location}</p>
+                                            <p class="text-sm"><strong>Contact:</strong> ${request.ownerPhone}</p>
+                                            <p class="text-sm"><strong>Estimated Cost:</strong> LKR ${request.totalCost}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-15">
+                                        <p class="text-sm"><strong>Problem:</strong></p>
+                                        <p class="text-sm text-muted">${request.notes}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="booking-actions mt-20">
+                                    <button onclick="acceptBooking('${request.id}')" class="btn btn-primary">
+                                        <i data-lucide="check"></i> Accept Booking
+                                    </button>
+                                    <button onclick="rejectBooking('${request.id}')" class="btn btn-outline text-danger ml-10">
+                                        <i data-lucide="x"></i> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('') : '<div class="card text-center py-40"><p class="text-muted">No pending booking requests.</p></div>'}
+                    </div>
+                </main>
+            </div>
+        </div>
+    `;
+};
+
+export const VetSettingsPage = () => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="auth-card-container">
+                <div class="card">
+                    <div class="flex items-center gap-10 mb-20">
+                        <a href="#vet-dashboard" class="text-primary"><i data-lucide="arrow-left"></i></a>
+                        <h3 class="m-0">Availability & Pricing Settings</h3>
+                    </div>
+                    
+                    <form id="vet-settings-form">
+                        <div class="form-section">
+                            <h4>Service Availability</h4>
+                            <div class="form-grid mt-15">
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="acceptsHomeVisits" name="acceptsHomeVisits" 
+                                            ${currentUser.acceptsHomeVisits ? 'checked' : ''}>
+                                        <span class="checkmark"></span>
+                                        Accept Home Visits
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="acceptsClinicVisits" name="acceptsClinicVisits" 
+                                            ${currentUser.acceptsClinicVisits !== false ? 'checked' : ''}>
+                                        <span class="checkmark"></span>
+                                        Accept Clinic Visits
+                                    </label>
+                                </div>
+                                <div class="form-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="emergencyAvailability" name="emergencyAvailability" 
+                                            ${currentUser.emergencyAvailability ? 'checked' : ''}>
+                                        <span class="checkmark"></span>
+                                        Emergency Availability (10 PM - 6 AM)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section mt-30">
+                            <h4>Working Hours</h4>
+                            <div class="form-grid mt-15">
+                                ${Input({ label: 'Start Time', id: 'workStart', name: 'workStart', type: 'time', value: currentUser.workStart || '08:00' })}
+                                ${Input({ label: 'End Time', id: 'workEnd', name: 'workEnd', type: 'time', value: currentUser.workEnd || '20:00' })}
+                            </div>
+                        </div>
+                        
+                        <div class="form-section mt-30">
+                            <h4>Pricing</h4>
+                            <div class="form-grid mt-15">
+                                ${Input({ label: 'Base Consultation Fee (LKR)', id: 'baseFee', name: 'baseFee', type: 'number', value: currentUser.baseFee || '2000', required: true })}
+                                ${Input({ label: 'Home Visit Transport Fee (LKR)', id: 'transportFee', name: 'transportFee', type: 'number', value: currentUser.transportFee || '500' })}
+                                ${Input({ label: 'Emergency Fee (LKR)', id: 'emergencyFee', name: 'emergencyFee', type: 'number', value: currentUser.emergencyFee || '1500' })}
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions mt-30">
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
+                            <a href="#vet-dashboard" class="btn btn-outline ml-10">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+};
 
 export const AdminAddVetPage = () => AdminLayout(`
     <div class="max-w-700">
