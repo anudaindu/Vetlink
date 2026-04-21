@@ -1,0 +1,18 @@
+{
+  "name": "vetlink",
+  "version": "1.0.0",
+  "description": "Smart Pet Health & Vaccination Tracker with Real-Time Booking System",
+  "scripts": {
+    "start": "open index.html",
+    "dev": "vercel dev",
+    "build": "echo 'No build needed for static site'",
+    "deploy": "vercel --prod",
+    "save": "git add . && git commit -m \"Save changes\" && git push origin main",
+    "status": "git status"
+  },
+  "author": "Anuda H",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^28.0.0"
+  }
+}

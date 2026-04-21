@@ -1,0 +1,37 @@
+# VetLink Vercel Deployment Commands
+
+## Step 1: Install Node.js (if not installed)
+# Download from: https://nodejs.org/
+
+## Step 2: Install Vercel CLI globally
+npm install -g vercel
+
+## Step 3: Deploy to Vercel
+cd /Users/anudahettiarachchi/Downloads/Vetlink
+vercel --prod
+
+## Step 4: Link repository (first time only)
+vercel link
+
+## Alternative: Manual Upload
+1. Go to https://vercel.com
+2. Click "New Project"
+3. Upload the VetLink folder
+4. Configure as Static Site
+5. Deploy
+
+## Files Created for Vercel Integration:
+✅ vercel.json - Vercel configuration
+✅ package.json - Updated with deployment scripts
+✅ DEPLOYMENT.md - Complete deployment guide
+✅ render.yaml - Updated with Vercel notes
+
+## After Deployment:
+Your VetLink booking system will be available at:
+https://vetlink-[your-username].vercel.app
+
+## Test URLs:
+- Pet Owner: https://your-domain.vercel.app/#login
+- Veterinarian: https://your-domain.vercel.app/#vet-login
+- Booking: https://your-domain.vercel.app/#booking
+- Vet Dashboard: https://your-domain.vercel.app/#vet-dashboard
