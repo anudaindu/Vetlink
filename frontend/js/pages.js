@@ -1,4 +1,69 @@
 import { vaccineTypes, mockVets, cities } from './data.js';
+import { Input, SectionHeader, Card, Button } from './components.js';
+
+// Navigation Constants
+const petOwnerNav = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard', href: '#dashboard' },
+    { id: 'my-pets', label: 'My Pets', icon: 'dog', href: '#my-pets' },
+    { id: 'register-pet', label: 'Register Pet', icon: 'plus-circle', href: '#register-pet' },
+    { id: 'find-vet', label: 'Find Vet', icon: 'search', href: '#find-vet' },
+    { id: 'book-vet', label: 'Book Vet', icon: 'calendar-plus', href: '#book-vet' },
+    { id: 'account', label: 'Account', icon: 'user', href: '#account' },
+    { id: 'logout', label: 'Logout', icon: 'log-out', href: '#logout', className: 'text-danger' }
+];
+
+const vetNav = [
+    { id: 'vet-dashboard', label: 'Dashboard', icon: 'layout-dashboard', href: '#vet-dashboard' },
+    { id: 'incoming-requests', label: 'Incoming Requests', icon: 'bell', href: '#incoming-requests' },
+    { id: 'my-patients', label: 'My Patients', icon: 'users', href: '#my-patients' },
+    { id: 'schedule', label: 'Schedule', icon: 'calendar', href: '#schedule' },
+    { id: 'settings', label: 'Settings', icon: 'settings', href: '#settings' },
+    { id: 'profile', label: 'Profile', icon: 'user-cog', href: '#profile' },
+    { id: 'logout', label: 'Logout', icon: 'log-out', href: '#logout', className: 'text-danger' }
+];
+
+const DashboardLayout = (content, activeId, role = 'pet-owner') => {
+    const navItems = role === 'pet-owner' ? petOwnerNav : vetNav;
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const userName = currentUser.fullName || currentUser.name || 'User';
+
+    return `
+        <div class="dashboard-container">
+            <aside class="dashboard-sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-container">
+                        <div class="logo-placeholder"><i data-lucide="shield-plus"></i></div>
+                        <span class="app-name">VetLink</span>
+                    </div>
+                </div>
+                <nav class="sidebar-nav">
+                    ${navItems.map(item => `
+                        <a href="${item.href}" class="nav-item ${activeId === item.id ? 'active' : ''} ${item.className || ''}">
+                            <i data-lucide="${item.icon}"></i>
+                            <span>${item.id === 'account' ? `${userName}` : item.label}</span>
+                        </a>
+                    `).join('')}
+                </nav>
+            </aside>
+            <main class="dashboard-main">
+                <header class="dashboard-top-nav">
+                    <div class="mobile-menu-toggle">
+                        <i data-lucide="menu"></i>
+                    </div>
+                    <div class="top-nav-right">
+                        <div class="user-info">
+                            <span>${userName}</span>
+                            <div class="avatar-sm">${userName.charAt(0)}</div>
+                        </div>
+                    </div>
+                </header>
+                <div class="dashboard-content fade-in">
+                    ${content}
+                </div>
+            </main>
+        </div>
+    `;
+};
 
 // Booking System Components
 
