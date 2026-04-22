@@ -1044,18 +1044,18 @@ class VetLinkApp {
                     html = OwnerPetsPage(this.state.pets);
                 }
                 break;
+            case 'owner/register-pet':
+                if (userRole === 'vet' || userRole === 'veterinarian') {
+                    html = AccessDeniedPage();
+                } else {
+                    html = RegisterPetPage();
+                }
+                break;
             case 'owner/book-vet':
                 if (userRole === 'vet' || userRole === 'veterinarian') {
                     html = AccessDeniedPage();
                 } else {
                     html = BookingPage();
-                }
-                break;
-            case 'owner/find-vet':
-                if (userRole === 'vet' || userRole === 'veterinarian') {
-                    html = AccessDeniedPage();
-                } else {
-                    html = FindVetPage(this.state.vets);
                 }
                 break;
             case 'owner/profile':
@@ -1130,7 +1130,8 @@ class VetLinkApp {
         // Role-based navigation
         if (isLoggedIn) {
             if (userRole === 'vet' || userRole === 'veterinarian') {
-                // Veterinarian Navigation
+                // Veterinarian Navigation - EXACT ORDER REQUIRED
+                const currentUser = JSON.parse(localStorage.getItem('currentVet') || '{}');
                 navLinks.innerHTML = `
                     <li><a href="#vet/dashboard" class="nav-link">Dashboard</a></li>
                     <li><a href="#vet/requests" class="nav-link">Incoming Requests</a></li>
@@ -1138,17 +1139,19 @@ class VetLinkApp {
                     <li><a href="#vet/schedule" class="nav-link">Schedule</a></li>
                     <li><a href="#vet/settings" class="nav-link">Settings</a></li>
                     <li><a href="#vet/profile" class="nav-link">Profile</a></li>
-                    <li><a href="#home" class="btn-logout" onclick="logout()">Logout</a></li>
+                    <li><a href="#" class="btn-logout" onclick="logout()">Logout</a></li>
                 `;
             } else {
-                // Pet Owner Navigation
+                // Pet Owner Navigation - EXACT ORDER REQUIRED
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
                 navLinks.innerHTML = `
                     <li><a href="#owner/dashboard" class="nav-link">Dashboard</a></li>
                     <li><a href="#owner/pets" class="nav-link">My Pets</a></li>
-                    <li><a href="#owner/find-vet" class="nav-link">Find a Vet</a></li>
-                    <li><a href="#owner/book-vet" class="nav-link">Book a Vet</a></li>
-                    <li><a href="#owner/profile" class="nav-link">Profile</a></li>
-                    <li><a href="#home" class="btn-logout" onclick="logout()">Logout</a></li>
+                    <li><a href="#register" class="nav-link">Register Pet</a></li>
+                    <li><a href="#vets" class="nav-link">Find Vet</a></li>
+                    <li><a href="#booking" class="nav-link">Book Vet</a></li>
+                    <li><a href="#owner/profile" class="nav-link">Account (${currentUser.fullName || 'User'})</a></li>
+                    <li><a href="#" class="btn-logout" onclick="logout()">Logout</a></li>
                 `;
             }
         } else {
@@ -1169,7 +1172,13 @@ class VetLinkApp {
         navLinkElements.forEach(link => {
             link.classList.remove('active');
             const href = link.getAttribute('href').replace('#', '');
-            if (href === currentPath || (currentPath === '' && href === 'home')) {
+            
+            // Handle exact matches and special cases
+            if (href === currentPath || 
+                (currentPath === '' && href === 'home') ||
+                (currentPath === 'booking' && href === 'book-vet') ||
+                (currentPath === 'vets' && href === 'find-vet') ||
+                (currentPath === 'register' && href === 'register-pet')) {
                 link.classList.add('active');
             }
         });
@@ -1302,9 +1311,7 @@ class VetLinkApp {
                 this.state.pets = JSON.parse(localStorage.getItem('pets') || '[]').filter(pet => pet.owner === user.fullName);
             }
             
-            alert(`Login successful! Welcome back, ${user.fullName}!`);
-            
-            // Redirect to role-specific dashboard
+            // CRITICAL: Always redirect to dashboard - no homepage, no login page
             if (user.role === 'vet' || user.role === 'veterinarian') {
                 window.location.hash = '#vet/dashboard';
             } else {
@@ -1399,7 +1406,7 @@ class VetLinkApp {
             this.state.isLoggedIn = true;
             this.state.userRole = 'vet';
             
-            alert(`Welcome Dr. ${vet.name.split(' ')[1]}! Access granted to VetLink Professional Portal.`);
+            // CRITICAL: Always redirect to vet dashboard - no homepage, no login page
             window.location.hash = '#vet/dashboard';
         } else {
             alert('Invalid credentials. Please check your email and password, or contact admin for approval.');
@@ -1853,9 +1860,19 @@ window.rejectBooking = function(bookingId) {
 
 // Global logout function
 window.logout = () => {
+    // Clear all user sessions
     localStorage.removeItem('currentUser');
     localStorage.removeItem('currentVet');
-    window.location.hash = '#home';
+    
+    // Reset app state
+    if (window.vetLinkApp) {
+        window.vetLinkApp.state.currentUser = null;
+        window.vetLinkApp.state.isLoggedIn = false;
+        window.vetLinkApp.state.userRole = 'user';
+    }
+    
+    // Redirect to main landing page (not #home, but root)
+    window.location.hash = '';
 };
 
 const style = document.createElement('style');
