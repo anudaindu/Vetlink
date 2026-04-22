@@ -2,6 +2,23 @@ import { vaccineTypes, mockVets, cities } from './data.js';
 
 // Booking System Components
 
+export const AccessDeniedPage = () => `
+    <div class="container page-container py-40">
+        <div class="auth-card-container">
+            <div class="card text-center">
+                <div class="mb-30">
+                    <i data-lucide="shield-x" style="width: 80px; height: 80px; color: #dc3545;"></i>
+                </div>
+                <h2>Access Denied</h2>
+                <p class="text-muted mb-30">You don't have permission to access this page.</p>
+                <div class="form-actions">
+                    <a href="#home" class="btn btn-primary">Return to Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
+`;
+
 export const HomePage = () => `
     <section class="hero">
         <div class="container hero-container">
@@ -207,6 +224,265 @@ export const RegisterPetPage = () => `
         </div>
     </div>
 `;
+
+export const OwnerPetsPage = (pets) => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="mb-30">
+                <div class="flex justify-between items-center">
+                    <h2>My Pets</h2>
+                    <a href="#register" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Add New Pet
+                    </a>
+                </div>
+            </div>
+
+            ${pets.length > 0 ? `
+                <div class="pets-grid">
+                    ${pets.map(pet => `
+                        <div class="card pet-card">
+                            <div class="pet-header">
+                                <img src="${pet.image}" alt="${pet.name}" class="pet-avatar">
+                                <div class="pet-info">
+                                    <h3>${pet.name}</h3>
+                                    <p class="text-muted">${pet.breed} · ${pet.type}</p>
+                                    <span class="pet-id">ID: ${pet.id}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="pet-details">
+                                <div class="detail-row">
+                                    <span class="label">Date of Birth:</span>
+                                    <span>${pet.dob}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Microchip:</span>
+                                    <span>${pet.microchip || 'Not registered'}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Vaccinations:</span>
+                                    <span>${pet.vaccinations.length} records</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Last Visit:</span>
+                                    <span>${pet.vaccinations[0]?.date || 'No records'}</span>
+                                </div>
+                            </div>
+
+                            <div class="pet-actions">
+                                <a href="#vaccination-book" class="btn btn-outline w-full mb-10">
+                                    <i data-lucide="book-open"></i> View Health Book
+                                </a>
+                                <div class="grid-2">
+                                    <a href="#owner/book-vet" class="btn btn-primary">
+                                        <i data-lucide="calendar"></i> Book Visit
+                                    </a>
+                                    <button class="btn btn-outline" onclick="editPet('${pet.id}')">
+                                        <i data-lucide="edit"></i> Edit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : `
+                <div class="card text-center py-40">
+                    <i data-lucide="heart" style="width: 80px; height: 80px; color: #007bff;"></i>
+                    <h3>No Pets Registered</h3>
+                    <p class="text-muted mb-20">Start by registering your first pet to access all VetLink features.</p>
+                    <a href="#register" class="btn btn-primary">
+                        <i data-lucide="plus"></i> Register Your First Pet
+                    </a>
+                </div>
+            `}
+
+            <div class="card mt-30">
+                <h3 class="flex items-center gap-10 mb-20">
+                    <i data-lucide="bell" class="text-primary"></i>
+                    Upcoming Reminders
+                </h3>
+                <div class="reminders-list">
+                    ${pets.flatMap(pet => 
+                        pet.reminders.map(reminder => `
+                            <div class="reminder-item mb-10">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <strong>${pet.name}</strong> - ${reminder.title}
+                                    </div>
+                                    <span class="text-xs text-muted">${reminder.date}</span>
+                                </div>
+                            </div>
+                        `)
+                    ).length > 0 ? 
+                        pets.flatMap(pet => 
+                            pet.reminders.map(reminder => `
+                                <div class="reminder-item mb-10">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <strong>${pet.name}</strong> - ${reminder.title}
+                                        </div>
+                                        <span class="text-xs text-muted">${reminder.date}</span>
+                                    </div>
+                                </div>
+                            `)
+                        ).join('') : 
+                        '<p class="text-muted">No upcoming reminders</p>'
+                    }
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+export const OwnerDashboardPage = (pets) => {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const selectedPet = pets[0];
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="dashboard-layout">
+                <aside class="dashboard-sidebar">
+                    <div class="card pet-profile-card">
+                        <div class="pet-img-large">
+                            <img src="${selectedPet.image}" alt="${selectedPet.name}">
+                        </div>
+                        <div class="pet-info">
+                            <div class="flex justify-between items-center mb-5">
+                                <h2 class="m-0">${selectedPet.name}</h2>
+                                <span class="pet-id-tag">ID: ${selectedPet.id}</span>
+                            </div>
+                            <p>${selectedPet.breed} · ${selectedPet.type}</p>
+                            <div class="pet-stats">
+                                <div><strong>DOB:</strong> ${selectedPet.dob}</div>
+                                <div><strong>Owner:</strong> ${selectedPet.owner}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-20">
+                        <h3 class="flex items-center gap-10">
+                            <i data-lucide="book-open" class="text-primary"></i>
+                            Vaccination Book
+                        </h3>
+                        <p class="text-muted text-sm mb-20">Access and manage ${selectedPet.name}'s digital health certificate.</p>
+                        <a href="#owner/pets" class="btn btn-primary w-full">
+                            View Pet Records
+                        </a>
+                    </div>
+
+                    <div class="card mt-20">
+                        <h3 class="flex items-center gap-10">
+                            <i data-lucide="calendar" class="text-primary"></i>
+                            Book Appointment
+                        </h3>
+                        <p class="text-muted text-sm mb-20">Request a veterinary consultation for your pet.</p>
+                        <a href="#owner/book-vet" class="btn btn-outline w-full">
+                            <i data-lucide="plus"></i> Book Vet Visit
+                        </a>
+                    </div>
+                </aside>
+
+                <main class="dashboard-main">
+                    <div class="card mb-30">
+                        <h3>Pet Owner Dashboard</h3>
+                        <div class="stats-mini-grid mt-20">
+                            <div class="stat-mini">
+                                <span class="label">My Pets</span>
+                                <span class="value">${pets.length}</span>
+                            </div>
+                            <div class="stat-mini">
+                                <span class="label">Upcoming Vaccinations</span>
+                                <span class="value">${selectedPet.vaccinations.filter(v => v.status === 'due').length}</span>
+                            </div>
+                            <div class="stat-mini">
+                                <span class="label">Active Bookings</span>
+                                <span class="value">0</span>
+                            </div>
+                            <div class="stat-mini">
+                                <span class="label">Last Visit</span>
+                                <span class="value">${selectedPet.vaccinations[0]?.date || 'None'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h4 class="flex items-center gap-10 mb-20">
+                                <i data-lucide="heart" class="text-primary"></i>
+                                Pet Health Summary
+                            </h4>
+                            <div class="health-summary">
+                                <div class="health-item mb-15">
+                                    <div class="flex justify-between items-center">
+                                        <span>Vaccination Status</span>
+                                        <span class="status-badge status-ok">Up to date</span>
+                                    </div>
+                                </div>
+                                <div class="health-item mb-15">
+                                    <div class="flex justify-between items-center">
+                                        <span>Last Checkup</span>
+                                        <span class="text-sm text-muted">${selectedPet.vaccinations[0]?.date || 'No records'}</span>
+                                    </div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="flex justify-between items-center">
+                                        <span>Next Due</span>
+                                        <span class="text-sm text-muted">${selectedPet.vaccinations[0]?.nextDue || 'No upcoming'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h4 class="flex items-center gap-10 mb-20">
+                                <i data-lucide="bell" class="text-primary"></i>
+                                Reminders
+                            </h4>
+                            <div class="reminders-list">
+                                ${selectedPet.reminders.length > 0 ? selectedPet.reminders.map(reminder => `
+                                    <div class="reminder-item mb-10">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm">${reminder.title}</span>
+                                            <span class="text-xs text-muted">${reminder.date}</span>
+                                        </div>
+                                    </div>
+                                `).join('') : '<p class="text-muted text-sm">No reminders set</p>'}
+                            </div>
+                            <div class="mt-15">
+                                <a href="#owner/pets" class="btn btn-outline w-full">
+                                    Manage Reminders
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-30">
+                        <h4 class="flex items-center gap-10 mb-20">
+                            <i data-lucide="activity" class="text-primary"></i>
+                            Quick Actions
+                        </h4>
+                        <div class="quick-actions-grid">
+                            <a href="#owner/book-vet" class="btn btn-outline">
+                                <i data-lucide="calendar-plus"></i> Book Appointment
+                            </a>
+                            <a href="#owner/find-vet" class="btn btn-outline">
+                                <i data-lucide="search"></i> Find Veterinarian
+                            </a>
+                            <a href="#owner/pets" class="btn btn-outline">
+                                <i data-lucide="heart"></i> Pet Records
+                            </a>
+                            <a href="#owner/profile" class="btn btn-outline">
+                                <i data-lucide="user"></i> My Profile
+                            </a>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    `;
+};
 
 export const DashboardPage = (pets) => {
     const selectedPet = pets[0];
@@ -841,15 +1117,326 @@ export const VetBookingDashboardPage = () => {
     `;
 };
 
+export const VetPatientsPage = () => {
+    const currentVet = JSON.parse(localStorage.getItem('currentVet') || '{}');
+    const allPets = JSON.parse(localStorage.getItem('pets') || '[]');
+    
+    // Mock patients data - in real app, this would come from API
+    const patients = allPets.slice(0, 3);
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="mb-30">
+                <h2>My Patients</h2>
+                <p class="text-muted">Manage your patient records and treatment history.</p>
+            </div>
+
+            <div class="patients-grid">
+                ${patients.map(pet => `
+                    <div class="card patient-card">
+                        <div class="patient-header">
+                            <img src="${pet.image}" alt="${pet.name}" class="patient-avatar">
+                            <div class="patient-info">
+                                <h3>${pet.name}</h3>
+                                <p class="text-muted">${pet.breed} · ${pet.type}</p>
+                                <div class="patient-meta">
+                                    <span class="text-sm"><strong>Owner:</strong> ${pet.owner}</span>
+                                    <span class="text-sm"><strong>ID:</strong> ${pet.id}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="patient-stats">
+                            <div class="stat-item">
+                                <span class="label">Vaccinations</span>
+                                <span class="value">${pet.vaccinations.length}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Treatments</span>
+                                <span class="value">${pet.treatments.length}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="label">Last Visit</span>
+                                <span class="value">${pet.vaccinations[0]?.date || 'N/A'}</span>
+                            </div>
+                        </div>
+
+                        <div class="patient-actions">
+                            <button class="btn btn-primary w-full mb-10" onclick="viewPatientDetails('${pet.id}')">
+                                <i data-lucide="file-text"></i> View Full Record
+                            </button>
+                            <div class="grid-2">
+                                <button class="btn btn-outline" onclick="addVaccination('${pet.id}')">
+                                    <i data-lucide="syringe"></i> Add Vaccine
+                                </button>
+                                <button class="btn btn-outline" onclick="addTreatment('${pet.id}')">
+                                    <i data-lucide="stethoscope"></i> Add Treatment
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="card mt-30">
+                <h3 class="flex items-center gap-10 mb-20">
+                    <i data-lucide="calendar" class="text-primary"></i>
+                    Recent Activity
+                </h3>
+                <div class="activity-list">
+                    ${patients.flatMap(pet => 
+                        pet.vaccinations.slice(0, 2).map(vaccination => `
+                            <div class="activity-item mb-10">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <strong>${pet.name}</strong> - ${vaccination.name}
+                                        <span class="text-muted text-sm ml-10">${vaccination.date}</span>
+                                    </div>
+                                    <span class="status-badge status-ok">Completed</span>
+                                </div>
+                            </div>
+                        `)
+                    ).join('') || '<p class="text-muted">No recent activity</p>'}
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+export const VetSchedulePage = () => {
+    const currentVet = JSON.parse(localStorage.getItem('currentVet') || '{}');
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="mb-30">
+                <h2>Schedule & Availability</h2>
+                <p class="text-muted">Manage your working hours and appointment availability.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3 class="flex items-center gap-10 mb-20">
+                        <i data-lucide="clock" class="text-primary"></i>
+                        Working Hours
+                    </h3>
+                    <div class="schedule-info">
+                        <div class="schedule-row">
+                            <span class="label">Start Time:</span>
+                            <span class="value">${currentVet.workStart || '08:00'}</span>
+                        </div>
+                        <div class="schedule-row">
+                            <span class="label">End Time:</span>
+                            <span class="value">${currentVet.workEnd || '20:00'}</span>
+                        </div>
+                        <div class="schedule-row">
+                            <span class="label">Emergency Available:</span>
+                            <span class="value">${currentVet.emergencyAvailability ? 'Yes' : 'No'}</span>
+                        </div>
+                    </div>
+                    <div class="mt-20">
+                        <a href="#vet/settings" class="btn btn-outline w-full">
+                            <i data-lucide="settings"></i> Update Schedule
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="flex items-center gap-10 mb-20">
+                        <i data-lucide="check-circle" class="text-primary"></i>
+                        Service Availability
+                    </h3>
+                    <div class="availability-info">
+                        <div class="availability-row">
+                            <span class="label">Home Visits:</span>
+                            <span class="value ${currentVet.acceptsHomeVisits ? 'text-success' : 'text-danger'}">
+                                ${currentVet.acceptsHomeVisits ? 'Available' : 'Unavailable'}
+                            </span>
+                        </div>
+                        <div class="availability-row">
+                            <span class="label">Clinic Visits:</span>
+                            <span class="value ${currentVet.acceptsClinicVisits !== false ? 'text-success' : 'text-danger'}">
+                                ${currentVet.acceptsClinicVisits !== false ? 'Available' : 'Unavailable'}
+                            </span>
+                        </div>
+                        <div class="availability-row">
+                            <span class="label">Emergency (10 PM - 6 AM):</span>
+                            <span class="value ${currentVet.emergencyAvailability ? 'text-success' : 'text-danger'}">
+                                ${currentVet.emergencyAvailability ? 'Available' : 'Unavailable'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-20">
+                        <a href="#vet/settings" class="btn btn-outline w-full">
+                            <i data-lucide="settings"></i> Update Availability
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-30">
+                <h3 class="flex items-center gap-10 mb-20">
+                    <i data-lucide="calendar-days" class="text-primary"></i>
+                    Today's Appointments
+                </h3>
+                <div class="appointments-list">
+                    <div class="appointment-item">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <strong>Max</strong> - Regular Checkup
+                                <span class="text-muted text-sm ml-10">10:00 AM</span>
+                            </div>
+                            <span class="status-badge status-ok">Confirmed</span>
+                        </div>
+                    </div>
+                    <div class="appointment-item">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <strong>Luna</strong> - Vaccination
+                                <span class="text-muted text-sm ml-10">2:00 PM</span>
+                            </div>
+                            <span class="status-badge status-due">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-30">
+                <h3 class="flex items-center gap-10 mb-20">
+                    <i data-lucide="trending-up" class="text-primary"></i>
+                    Earnings Summary (This Week)
+                </h3>
+                <div class="earnings-grid">
+                    <div class="earnings-item">
+                        <span class="label">Consultations</span>
+                        <span class="value">LKR 8,000</span>
+                    </div>
+                    <div class="earnings-item">
+                        <span class="label">Transport Fees</span>
+                        <span class="value">LKR 1,000</span>
+                    </div>
+                    <div class="earnings-item">
+                        <span class="label">Emergency Fees</span>
+                        <span class="value">LKR 0</span>
+                    </div>
+                    <div class="earnings-item total">
+                        <span class="label">Total Earnings</span>
+                        <span class="value">LKR 9,000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+export const VetProfilePage = () => {
+    const currentVet = JSON.parse(localStorage.getItem('currentVet') || '{}');
+    
+    return `
+        <div class="container page-container py-40">
+            <div class="auth-card-container">
+                <div class="card">
+                    <div class="text-center mb-30">
+                        <div class="avatar" style="width: 100px; height: 100px; margin: 0 auto 20px; font-size: 2.5rem;">
+                            ${currentVet.name?.charAt(0).toUpperCase() || 'V'}
+                        </div>
+                        <h2>Dr. ${currentVet.name || 'Veterinarian'}</h2>
+                        <p class="text-muted">${currentVet.clinic || 'Veterinary Clinic'}</p>
+                    </div>
+                    
+                    <div class="profile-sections">
+                        <div class="profile-section">
+                            <h4>Professional Information</h4>
+                            <div class="profile-info">
+                                <div class="info-row">
+                                    <span class="label">Full Name:</span>
+                                    <span class="value">${currentVet.name || 'Not set'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Clinic:</span>
+                                    <span class="value">${currentVet.clinic || 'Not set'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Location:</span>
+                                    <span class="value">${currentVet.location || 'Not set'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">License Number:</span>
+                                    <span class="value">${currentVet.licenseNumber || 'Not set'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Specialty:</span>
+                                    <span class="value">${currentVet.specialty || 'General Practice'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Rating:</span>
+                                    <span class="value">
+                                        <div class="rating-display">
+                                            <i data-lucide="star" class="star-icon"></i>
+                                            ${currentVet.rating || '0.0'}
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h4>Contact Information</h4>
+                            <div class="profile-info">
+                                <div class="info-row">
+                                    <span class="label">Email:</span>
+                                    <span class="value">${currentVet.email || 'Not set'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Phone:</span>
+                                    <span class="value">${currentVet.phone || 'Not set'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-section">
+                            <h4>Account Status</h4>
+                            <div class="profile-info">
+                                <div class="info-row">
+                                    <span class="label">Approval Status:</span>
+                                    <span class="value">
+                                        <span class="status-badge ${currentVet.approved ? 'status-ok' : 'status-due'}">
+                                            ${currentVet.approved ? 'Approved' : 'Pending'}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Account Status:</span>
+                                    <span class="value">
+                                        <span class="status-badge ${currentVet.status === 'Active' ? 'status-ok' : 'status-due'}">
+                                            ${currentVet.status || 'Active'}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions mt-30">
+                        <a href="#vet/settings" class="btn btn-primary">
+                            <i data-lucide="settings"></i> Edit Profile & Settings
+                        </a>
+                        <a href="#vet/dashboard" class="btn btn-outline ml-10">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
 export const VetSettingsPage = () => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const currentUser = JSON.parse(localStorage.getItem('currentVet') || '{}');
     
     return `
         <div class="container page-container py-40">
             <div class="auth-card-container">
                 <div class="card">
                     <div class="flex items-center gap-10 mb-20">
-                        <a href="#vet-dashboard" class="text-primary"><i data-lucide="arrow-left"></i></a>
+                        <a href="#vet/dashboard" class="text-primary"><i data-lucide="arrow-left"></i></a>
                         <h3 class="m-0">Availability & Pricing Settings</h3>
                     </div>
                     
@@ -903,7 +1490,7 @@ export const VetSettingsPage = () => {
                         
                         <div class="form-actions mt-30">
                             <button type="submit" class="btn btn-primary">Save Settings</button>
-                            <a href="#vet-dashboard" class="btn btn-outline ml-10">Cancel</a>
+                            <a href="#vet/dashboard" class="btn btn-outline ml-10">Cancel</a>
                         </div>
                     </form>
                 </div>
