@@ -1,4 +1,4 @@
-import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, UserRegistrationPage, UserProfilePage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage, VaccinationBookPage } from './pages.js';
+import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, UserRegistrationPage, UserProfilePage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage, VaccinationBookPage, BookingPage, VetBookingDashboardPage } from './pages.js';
 import { mockPets, mockVets } from './data.js';
 import { FirebaseService } from './firebase-service.js';
 
@@ -123,6 +123,12 @@ class VetLinkApp {
                 break;
             case 'vaccination-book':
                 html = VaccinationBookPage(this.state.pets[0]); // Simplified to first pet for MVP
+                break;
+            case 'booking':
+                html = BookingPage();
+                break;
+            case 'vet-dashboard':
+                html = VetBookingDashboardPage();
                 break;
             default:
                 html = HomePage();
