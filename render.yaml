@@ -1,9 +1,0 @@
-services:
-  - type: static
-    name: vetlink
-    rootDir: ./
-    publishPath: ./
-    buildCommand: "echo 'No build needed for static site'"
-    startCommand: "echo 'Static site - no start command needed'"
-    # Static sites are automatically deployed on every push to the main branch.
-    # For Vercel deployment, use: vercel --prod

@@ -1,0 +1,16 @@
+{
+  "name": "vetlink-frontend",
+  "version": "1.0.0",
+  "description": "VetLink Frontend - Real-time Veterinary Booking System",
+  "scripts": {
+    "start": "python3 -m http.server 3000",
+    "dev": "python3 -m http.server 3000",
+    "build": "echo 'Frontend build complete'",
+    "deploy": "vercel --prod"
+  },
+  "author": "Anuda H",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^28.0.0"
+  }
+}
