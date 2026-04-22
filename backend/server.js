@@ -5,6 +5,9 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Initialize Firebase
+const { db } = require('./config/firebase');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

@@ -1,25 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const Booking = require('../models/Booking');
-const Vet = require('../models/Vet');
-const Pet = require('../models/Pet');
+const { BookingService, VetService, PetService } = require('../services/firebaseService');
 const { authMiddleware } = require('../middleware/auth');
 
 // Get all bookings (admin/vet)
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { status, vetId, ownerId } = req.query;
-    let filter = {};
+    let query = {};
     
-    if (status) filter.status = status;
-    if (vetId) filter.assignedVetId = vetId;
-    if (ownerId) filter.ownerId = ownerId;
+    if (status) query.status = status;
+    if (vetId) query.vetId = vetId;
+    if (ownerId) query.ownerId = ownerId;
 
-    const bookings = await Booking.find(filter)
-      .populate('petId', 'name type breed')
-      .populate('ownerId', 'fullName email phone')
-      .populate('assignedVetId', 'fullName clinic phone')
-      .sort({ createdAt: -1 });
+    const bookings = await BookingService.findBookings(query);
 
     res.status(200).json({
       status: 'success',
@@ -49,7 +43,7 @@ router.post('/', authMiddleware, async (req, res) => {
     } = req.body;
 
     // Validate pet exists and belongs to user
-    const pet = await Pet.findOne({ _id: petId, owner: req.user.id });
+    const pet = await PetService.findPetByIdAndOwner(petId, req.user.id);
     if (!pet) {
       return res.status(404).json({
         status: 'error',
@@ -68,12 +62,7 @@ router.post('/', authMiddleware, async (req, res) => {
     const totalCost = baseFee + transportFee + emergencyFee;
 
     // Find available vets based on criteria
-    const availableVets = await Vet.find({
-      approved: true,
-      status: 'Active',
-      [visitType === 'home' ? 'acceptsHomeVisits' : 'acceptsClinicVisits']: true,
-      ...(emergencyDetected && { emergencyAvailability: true })
-    });
+    const availableVets = await VetService.findAvailableVets(visitType, emergencyDetected);
 
     if (availableVets.length === 0) {
       return res.status(400).json({
@@ -83,7 +72,7 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     // Create booking
-    const booking = new Booking({
+    const booking = await BookingService.createBooking({
       petId,
       ownerId: req.user.id,
       ownerName: req.user.fullName,
@@ -99,11 +88,8 @@ router.post('/', authMiddleware, async (req, res) => {
       transportFee,
       emergencyFee,
       totalCost,
-      status: 'pending',
-      availableVets: availableVets.map(vet => vet._id)
+      availableVets: availableVets.map(vet => vet.id)
     });
-
-    await booking.save();
 
     // TODO: Send notifications to available vets
     // This would be implemented with WebSocket or push notifications
@@ -125,7 +111,7 @@ router.post('/', authMiddleware, async (req, res) => {
 // Accept booking (vet only)
 router.patch('/:id/accept', authMiddleware, async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.id);
+    const booking = await BookingService.findBookingById(req.params.id);
     
     if (!booking) {
       return res.status(404).json({
@@ -151,14 +137,7 @@ router.patch('/:id/accept', authMiddleware, async (req, res) => {
     }
 
     // Update booking
-    booking.status = 'accepted';
-    booking.assignedVetId = req.user.id;
-    booking.assignedVetName = req.user.fullName;
-    booking.assignedVetClinic = req.user.clinic;
-    booking.assignedVetPhone = req.user.phone;
-    booking.acceptedAt = new Date();
-
-    await booking.save();
+    const updatedBooking = await BookingService.acceptBooking(req.params.id, req.user);
 
     // TODO: Send notification to pet owner
     // This would be implemented with WebSocket or email
@@ -166,7 +145,7 @@ router.patch('/:id/accept', authMiddleware, async (req, res) => {
     res.status(200).json({
       status: 'success',
       message: 'Booking accepted successfully',
-      data: booking
+      data: updatedBooking
     });
   } catch (error) {
     res.status(500).json({
@@ -180,7 +159,7 @@ router.patch('/:id/accept', authMiddleware, async (req, res) => {
 // Reject booking (vet only)
 router.patch('/:id/reject', authMiddleware, async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.id);
+    const booking = await BookingService.findBookingById(req.params.id);
     
     if (!booking) {
       return res.status(404).json({
@@ -205,23 +184,13 @@ router.patch('/:id/reject', authMiddleware, async (req, res) => {
       });
     }
 
-    // Remove vet from available vets list
-    booking.availableVets = booking.availableVets.filter(
-      vetId => vetId.toString() !== req.user.id.toString()
-    );
-
-    // If no vets left, mark as rejected
-    if (booking.availableVets.length === 0) {
-      booking.status = 'rejected';
-      booking.rejectedAt = new Date();
-    }
-
-    await booking.save();
+    // Update booking
+    const updatedBooking = await BookingService.rejectBooking(req.params.id, req.user.id);
 
     res.status(200).json({
       status: 'success',
       message: 'Booking rejected successfully',
-      data: booking
+      data: updatedBooking
     });
   } catch (error) {
     res.status(500).json({
@@ -235,7 +204,7 @@ router.patch('/:id/reject', authMiddleware, async (req, res) => {
 // Complete booking (vet only)
 router.patch('/:id/complete', authMiddleware, async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.id);
+    const booking = await BookingService.findBookingById(req.params.id);
     
     if (!booking) {
       return res.status(404).json({
@@ -253,7 +222,7 @@ router.patch('/:id/complete', authMiddleware, async (req, res) => {
     }
 
     // Check if vet is assigned to this booking
-    if (booking.assignedVetId.toString() !== req.user.id.toString()) {
+    if (booking.assignedVetId !== req.user.id) {
       return res.status(403).json({
         status: 'error',
         message: 'You are not assigned to this booking'
@@ -261,16 +230,12 @@ router.patch('/:id/complete', authMiddleware, async (req, res) => {
     }
 
     // Update booking
-    booking.status = 'completed';
-    booking.completedAt = new Date();
-    booking.notes = req.body.notes || booking.notes;
-
-    await booking.save();
+    const updatedBooking = await BookingService.completeBooking(req.params.id, req.body.notes);
 
     res.status(200).json({
       status: 'success',
       message: 'Booking completed successfully',
-      data: booking
+      data: updatedBooking
     });
   } catch (error) {
     res.status(500).json({

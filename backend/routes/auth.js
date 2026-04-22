@@ -1,9 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const Vet = require('../models/Vet');
+const { UserService, VetService } = require('../services/firebaseService');
 
 // User registration
 router.post('/register', async (req, res) => {
@@ -11,7 +9,7 @@ router.post('/register', async (req, res) => {
     const { fullName, email, phone, location, password } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await UserService.findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({
         status: 'error',
@@ -19,23 +17,18 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Create user
-    const user = new User({
+    const user = await UserService.createUser({
       fullName,
       email,
       phone,
       location,
-      password: hashedPassword
+      password
     });
-
-    await user.save();
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: 'user' },
+      { id: user.id, email: user.email, role: 'user' },
       process.env.JWT_SECRET || 'vetlink-secret-key',
       { expiresIn: '7d' }
     );
@@ -45,7 +38,7 @@ router.post('/register', async (req, res) => {
       message: 'User registered successfully',
       token,
       user: {
-        id: user._id,
+        id: user.id,
         fullName: user.fullName,
         email: user.email,
         phone: user.phone,
@@ -68,7 +61,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await UserService.findUserByEmail(email);
     if (!user) {
       return res.status(401).json({
         status: 'error',
@@ -77,6 +70,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Check password
+    const bcrypt = require('bcryptjs');
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -87,7 +81,7 @@ router.post('/login', async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: 'user' },
+      { id: user.id, email: user.email, role: 'user' },
       process.env.JWT_SECRET || 'vetlink-secret-key',
       { expiresIn: '7d' }
     );
@@ -97,7 +91,7 @@ router.post('/login', async (req, res) => {
       message: 'Login successful',
       token,
       user: {
-        id: user._id,
+        id: user.id,
         fullName: user.fullName,
         email: user.email,
         phone: user.phone,
@@ -120,7 +114,7 @@ router.post('/vet-login', async (req, res) => {
     const { email, password } = req.body;
 
     // Find vet
-    const vet = await Vet.findOne({ email });
+    const vet = await VetService.findVetByEmail(email);
     if (!vet) {
       return res.status(401).json({
         status: 'error',
@@ -137,6 +131,7 @@ router.post('/vet-login', async (req, res) => {
     }
 
     // Check password
+    const bcrypt = require('bcryptjs');
     const isPasswordValid = await bcrypt.compare(password, vet.password);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -147,7 +142,7 @@ router.post('/vet-login', async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { id: vet._id, email: vet.email, role: 'vet' },
+      { id: vet.id, email: vet.email, role: 'vet' },
       process.env.JWT_SECRET || 'vetlink-secret-key',
       { expiresIn: '7d' }
     );
@@ -157,7 +152,7 @@ router.post('/vet-login', async (req, res) => {
       message: 'Login successful',
       token,
       vet: {
-        id: vet._id,
+        id: vet.id,
         fullName: vet.fullName,
         email: vet.email,
         clinic: vet.clinic,
