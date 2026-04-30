@@ -1,238 +1,182 @@
-import { HomePage, RegisterPetPage, DashboardPage, AddVaccinationPage, FindVetPage, LoginPage, UserRegistrationPage, UserProfilePage, AdminLoginPage, AdminDashboardPage, AdminManageVetsPage, AdminAddVetPage, VaccinationBookPage, BookingPage, VetBookingDashboardPage } from './pages.js';
+import { 
+    HomePage, 
+    UserRegistrationPage, 
+    LoginPage, 
+    PetOwnerDashboardPage, 
+    MyPetsPage, 
+    RegisterPetPage, 
+    FindVetPage, 
+    BookVetPage, 
+    AccountPage,
+    VetDashboardPage,
+    IncomingRequestsPage,
+    MyPatientsPage,
+    SchedulePage,
+    VetSettingsPage,
+    VetProfilePage,
+    RoleSelectionPage,
+    AdminAddVetPage
+} from './pages.js';
 import { mockPets, mockVets } from './data.js';
-import { FirebaseService } from './firebase-service.js';
 
 class VetLinkApp {
     constructor() {
         this.appRoot = document.getElementById('app-root');
-        this.navLinks = document.querySelectorAll('.nav-links a');
         this.mobileMenuBtn = document.getElementById('mobile-menu-btn');
         this.navLinksContainer = document.getElementById('nav-links');
         
         this.state = {
-            pets: mockPets, // Fallback to mock data initially
+            pets: JSON.parse(localStorage.getItem('pets') || JSON.stringify(mockPets)),
             vets: mockVets,
-            currentUser: null,
-            currentPath: window.location.hash || '#home',
-            isFirebaseReady: false
+            currentUser: JSON.parse(localStorage.getItem('currentUser')),
+            currentPath: window.location.hash || '#home'
         };
 
         this.init();
     }
 
-    async init() {
-        // Update navigation based on login status
-        this.updateNavigation();
+    init() {
+        // Global utilities
+        window.handleLogout = () => {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                this.state.currentUser = null;
+                window.location.hash = '#home';
+                this.updateNavigation();
+            }
+        };
 
-        // Initialize Firebase Sync
-        try {
-            FirebaseService.subscribeToPets((pets) => {
-                this.state.pets = pets.length > 0 ? pets : mockPets;
-                this.state.isFirebaseReady = true;
-                this.handleRoute(); // Re-render when data arrives
-            });
-        } catch (error) {
-            console.warn("Firebase not configured, using local mock data.");
-        }
+        window.selectRole = (role) => {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            currentUser.role = role;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            this.state.currentUser = currentUser;
+            window.location.hash = role === 'veterinarian' ? '#vet-dashboard' : '#dashboard';
+        };
 
-        // Handle initial routing
-        this.handleRoute();
+        window.updateBookingStatus = (id, status) => {
+            const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+            const index = bookings.findIndex(b => b.id === id);
+            if (index !== -1) {
+                bookings[index].status = status;
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+                this.populateVetDashboard();
+                alert(`Booking ${status}!`);
+            }
+        };
 
-        // Listen for hash changes
+        // Routing
         window.addEventListener('hashchange', () => {
             this.state.currentPath = window.location.hash || '#home';
             this.handleRoute();
         });
 
         // Mobile menu toggle
-        this.mobileMenuBtn.addEventListener('click', () => {
-            this.navLinksContainer.classList.toggle('show-mobile');
-            const icon = this.mobileMenuBtn.querySelector('i');
-            const isOpen = this.navLinksContainer.classList.contains('show-mobile');
-            icon.setAttribute('data-lucide', isOpen ? 'x' : 'menu');
-            lucide.createIcons();
-        });
-
-        // Close mobile menu on link click
-        this.navLinksContainer.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A') {
-                this.navLinksContainer.classList.remove('show-mobile');
+        if (this.mobileMenuBtn) {
+            this.mobileMenuBtn.onclick = () => {
+                this.navLinksContainer.classList.toggle('show-mobile');
                 const icon = this.mobileMenuBtn.querySelector('i');
-                icon.setAttribute('data-lucide', 'menu');
+                const isOpen = this.navLinksContainer.classList.contains('show-mobile');
+                if (icon) icon.setAttribute('data-lucide', isOpen ? 'x' : 'menu');
                 lucide.createIcons();
-            }
-        });
+            };
+        }
+
+        this.handleRoute();
+        this.updateNavigation();
     }
 
     handleRoute() {
         const path = this.state.currentPath.replace('#', '');
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
         let html = '';
 
-        // Update active nav link
-        this.navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${path || 'home'}`) {
-                link.classList.add('active');
-            }
-        });
+        // Protected paths
+        const protectedPaths = ['dashboard', 'my-pets', 'register-pet', 'find-vet', 'book-vet', 'account', 'vet-dashboard', 'incoming-requests', 'my-patients', 'schedule', 'settings', 'profile', 'role-selection'];
+        
+        if (protectedPaths.includes(path) && (!currentUser || !currentUser.id)) {
+            window.location.hash = '#login';
+            return;
+        }
 
-        // Toggle Navbar/Footer for Admin
+        // Auto-redirect from role-selection if role already set
+        if (path === 'role-selection' && currentUser.role) {
+            window.location.hash = currentUser.role === 'veterinarian' ? '#vet-dashboard' : '#dashboard';
+            return;
+        }
+
+        // UI Visibility
+        const isDashboard = protectedPaths.includes(path) && path !== 'role-selection';
         const isAdmin = path.startsWith('admin');
         const navbar = document.querySelector('.navbar');
         const footer = document.querySelector('.footer');
-        if (navbar) navbar.style.display = isAdmin ? 'none' : 'flex';
-        if (footer) footer.style.display = (isAdmin && path !== 'admin-login') ? 'none' : 'block';
+        
+        if (navbar) navbar.style.display = (isDashboard || isAdmin) ? 'none' : 'flex';
+        if (footer) footer.style.display = (isDashboard || (isAdmin && path !== 'admin-login')) ? 'none' : 'block';
 
         switch (path) {
             case '':
-            case 'home':
-                html = HomePage();
+            case 'home': html = HomePage(); break;
+            case 'user-register': html = UserRegistrationPage(); break;
+            case 'login': html = LoginPage(); break;
+            case 'role-selection': html = RoleSelectionPage(); break;
+            case 'dashboard': 
+                if (currentUser.role === 'veterinarian') { window.location.hash = '#vet-dashboard'; return; }
+                html = PetOwnerDashboardPage(); 
                 break;
-            case 'user-register':
-                html = UserRegistrationPage();
+            case 'my-pets': html = MyPetsPage(); break;
+            case 'register-pet': html = RegisterPetPage(); break;
+            case 'find-vet': html = FindVetPage(); break;
+            case 'book-vet': html = BookVetPage(); break;
+            case 'account': html = AccountPage(); break;
+            case 'vet-dashboard': 
+                if (currentUser.role === 'pet-owner') { window.location.hash = '#dashboard'; return; }
+                html = VetDashboardPage(); 
                 break;
-            case 'register':
-                html = RegisterPetPage();
-                break;
-            case 'dashboard':
-                html = DashboardPage(this.state.pets);
-                break;
-            case 'profile':
-                html = UserProfilePage();
-                break;
-            case 'add-vaccination':
-                html = AddVaccinationPage();
-                break;
-            case 'vets':
-                html = FindVetPage(this.state.vets);
-                break;
-            case 'login':
-                html = LoginPage();
-                break;
-            case 'admin-login':
-                html = AdminLoginPage();
-                break;
-            case 'admin-dashboard':
-                html = AdminDashboardPage(this.calculateStats());
-                break;
-            case 'admin-vets':
-                html = AdminManageVetsPage(this.state.vets);
-                break;
-            case 'admin-add-vet':
-                html = AdminAddVetPage();
-                break;
-            case 'vaccination-book':
-                html = VaccinationBookPage(this.state.pets[0]); // Simplified to first pet for MVP
-                break;
-            case 'booking':
-                html = BookingPage();
-                break;
-            case 'vet-dashboard':
-                html = VetBookingDashboardPage();
-                break;
-            default:
-                html = HomePage();
+            case 'incoming-requests': html = IncomingRequestsPage(); break;
+            case 'my-patients': html = MyPatientsPage(); break;
+            case 'schedule': html = SchedulePage(); break;
+            case 'settings': html = VetSettingsPage(); break;
+            case 'profile': html = VetProfilePage(); break;
+            case 'admin-add-vet': html = AdminAddVetPage(); break;
+            default: html = HomePage();
         }
 
         this.render(html);
         this.attachEventListeners(path);
-    }
-
-    updateNavigation() {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const loginLink = document.getElementById('login-link');
-        const registerLink = document.getElementById('register-link');
-        const profileLink = document.getElementById('profile-link');
-
-        if (currentUser && currentUser.id) {
-            // User is logged in
-            if (loginLink) loginLink.style.display = 'none';
-            if (registerLink) registerLink.style.display = 'none';
-            if (profileLink) {
-                profileLink.style.display = 'block';
-                profileLink.textContent = currentUser.fullName.split(' ')[0]; // Show first name
-            }
-        } else {
-            // User is not logged in
-            if (loginLink) loginLink.style.display = 'block';
-            if (registerLink) registerLink.style.display = 'block';
-            if (profileLink) profileLink.style.display = 'none';
-        }
-    }
-
-    calculateStats() {
-        return {
-            vets: this.state.vets.length,
-            pets: this.state.pets.length,
-            records: this.state.pets.reduce((acc, pet) => acc + pet.vaccinations.length, 0)
-        };
+        this.handleDashboardUI(path);
     }
 
     render(html) {
         this.appRoot.innerHTML = html;
-        // Re-initialize Lucide icons after rendering new content
         lucide.createIcons();
-        // Update navigation based on login status
         this.updateNavigation();
         window.scrollTo(0, 0);
     }
 
     attachEventListeners(path) {
-        if (path === 'user-register') {
-            const form = document.getElementById('user-registration-form');
-            if (form) {
-                form.addEventListener('submit', (e) => this.handleUserRegistration(e));
-            }
-        }
+        // Forms
+        const forms = {
+            'user-registration-form': (e) => this.handleUserRegistration(e),
+            'login-form': (e) => this.handleLogin(e),
+            'register-pet-form': (e) => this.handleRegisterPet(e),
+            'booking-form': (e) => this.handleBookingSubmit(e),
+            'profile-edit-form': (e) => this.handleProfileUpdate(e)
+        };
 
-        if (path === 'login') {
-            const form = document.getElementById('login-form');
-            if (form) {
-                form.addEventListener('submit', (e) => this.handleLogin(e));
-            }
-        }
+        Object.entries(forms).forEach(([id, handler]) => {
+            const form = document.getElementById(id);
+            if (form) form.onsubmit = handler;
+        });
 
-        if (path === 'register') {
-            const form = document.getElementById('register-pet-form');
-            if (form) {
-                form.addEventListener('submit', (e) => this.handleRegisterPet(e));
-            }
-        }
-        
-        if (path === 'add-vaccination') {
-            const form = document.getElementById('add-vaccination-form');
-            if (form) {
-                form.addEventListener('submit', (e) => this.handleAddVaccination(e));
-            }
-        }
-
-        if (path === 'admin-login') {
-            const form = document.getElementById('admin-login-form');
-            if (form) form.addEventListener('submit', (e) => this.handleAdminLogin(e));
-        }
-
-        if (path === 'admin-add-vet') {
-            const form = document.getElementById('add-vet-form');
-            if (form) form.addEventListener('submit', (e) => this.handleAddVet(e));
-        }
-
-        if (path === 'vets') {
-            const searchInput = document.getElementById('vet-search');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => this.handleVetSearch(e));
-            }
-        }
-
-        if (path === 'profile') {
-            this.populateUserProfile();
-        }
+        // Search
+        const searchInput = document.getElementById('vet-search-input');
+        if (searchInput) searchInput.oninput = (e) => this.handleVetSearch(e);
     }
 
     handleUserRegistration(e) {
         e.preventDefault();
         const formData = new FormData(e.target);
-        
-        // Validate passwords match
         if (formData.get('password') !== formData.get('confirmPassword')) {
             alert('Passwords do not match!');
             return;
@@ -244,20 +188,16 @@ class VetLinkApp {
             email: formData.get('email'),
             phone: formData.get('phone'),
             location: formData.get('location'),
-            password: formData.get('password'), // In production, this should be hashed
-            registeredAt: new Date().toISOString()
+            password: formData.get('password'),
+            registeredAt: new Date().toISOString(),
+            role: null
         };
 
-        // Store user in localStorage (for demo purposes)
-        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
         users.push(newUser);
         localStorage.setItem('users', JSON.stringify(users));
-        
-        // Auto-login after registration
         localStorage.setItem('currentUser', JSON.stringify(newUser));
-        
-        alert('Account created successfully! Welcome to VetLink!');
-        window.location.hash = '#profile';
+        window.location.hash = '#role-selection';
     }
 
     handleLogin(e) {
@@ -266,221 +206,168 @@ class VetLinkApp {
         const email = formData.get('email');
         const password = formData.get('password');
 
-        // Get users from localStorage
         const users = JSON.parse(localStorage.getItem('users') || '[]');
         const user = users.find(u => u.email === email && u.password === password);
 
         if (user) {
             localStorage.setItem('currentUser', JSON.stringify(user));
-            alert('Login successful! Welcome back!');
-            window.location.hash = '#profile';
+            window.location.hash = user.role ? (user.role === 'veterinarian' ? '#vet-dashboard' : '#dashboard') : '#role-selection';
         } else {
-            alert('Invalid email or password. Please try again.');
+            alert('Invalid credentials.');
         }
     }
 
-    populateUserProfile() {
+    handleRegisterPet(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
         const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const userPets = this.state.pets.filter(pet => pet.owner === currentUser.fullName);
         
-        // Update user pets list
-        const petsList = document.getElementById('user-pets-list');
-        if (petsList) {
-            if (userPets.length > 0) {
-                petsList.innerHTML = userPets.map(pet => `
-                    <div class="card mb-15">
-                        <div class="flex items-center gap-15">
-                            <img src="${pet.image}" alt="${pet.name}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
-                            <div class="flex-1">
-                                <h4 class="m-0">${pet.name}</h4>
-                                <p class="text-muted text-sm">${pet.breed} • ${pet.type}</p>
-                                <p class="text-xs text-muted">ID: ${pet.id}</p>
-                            </div>
-                            <div class="flex gap-10">
-                                <a href="#vaccination-book" class="btn btn-outline btn-sm">Vaccination Book</a>
-                                <a href="#dashboard" class="btn btn-primary btn-sm">View Dashboard</a>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                petsList.innerHTML = `
-                    <div class="text-center py-40">
-                        <i data-lucide="dog" style="width: 48px; height: 48px; margin: 0 auto 15px; opacity: 0.3;"></i>
-                        <p class="text-muted">No pets registered yet.</p>
-                        <a href="#register" class="btn btn-primary mt-15">Register Your First Pet</a>
-                    </div>
-                `;
-            }
-        }
-
-        // Update stats
-        const totalPetsElement = document.getElementById('total-pets');
-        const totalRecordsElement = document.getElementById('total-records');
-        
-        if (totalPetsElement) totalPetsElement.textContent = userPets.length;
-        if (totalRecordsElement) {
-            const totalRecords = userPets.reduce((acc, pet) => acc + (pet.vaccinations?.length || 0), 0);
-            totalRecordsElement.textContent = totalRecords;
-        }
-    }
-
-    handleAdminLogin(e) {
-        e.preventDefault();
-        // Mock validation
-        alert('Admin logged in successfully!');
-        window.location.hash = '#admin-dashboard';
-    }
-
-    handleAddVet(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const newVet = {
-            id: 'vet' + (this.state.vets.length + 1),
-            name: formData.get('name'),
-            clinic: formData.get('clinic'),
-            location: formData.get('location'),
-            phone: formData.get('phone'),
-            email: formData.get('email'),
-            specialty: 'General Practice', // Default
-            rating: 5.0,
-            status: 'Active'
-        };
-
-        this.state.vets.push(newVet);
-        // Persist vets if you want, but for now we keep in mem for session
-        alert('New Veterinary Surgeon added successfully!');
-        window.location.hash = '#admin-vets';
-    }
-
-    async handleRegisterPet(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
         const newPet = {
             id: `VL-${Math.floor(1000 + Math.random() * 9000)}`,
             name: formData.get('petName'),
             type: formData.get('petType'),
             breed: formData.get('breed'),
             dob: formData.get('dob'),
-            color: formData.get('color'),
-            microchip: formData.get('microchip'),
-            owner: formData.get('ownerName'),
-            phone: formData.get('phone'),
+            owner: currentUser.fullName,
+            ownerId: currentUser.id,
             image: 'https://images.unsplash.com/photo-1543466835-00a732f3b95c?auto=format&fit=crop&q=80&w=200&h=200',
-            vaccinations: [],
-            reminders: []
+            vaccinations: []
         };
 
-        try {
-            await FirebaseService.addPet(newPet);
-            alert('Pet Registered Successfully (Cloud Synced)!');
-        } catch (error) {
-            this.state.pets.unshift(newPet); // Local fallback
-            alert('Pet Registered locally (Firebase not configured)');
-        }
-        
-        window.location.hash = '#dashboard';
-    }
-
-    async handleAddVaccination(e) {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const newRecord = {
-            id: Date.now().toString(),
-            name: formData.get('vaccineName'),
-            date: formData.get('dateGiven'),
-            nextDue: formData.get('nextDue'),
-            batchNumber: formData.get('batchNumber'),
-            vetName: formData.get('vetName'),
-            clinicName: formData.get('clinicName'),
-            notes: formData.get('notes'),
-            status: 'done'
-        };
-
-        try {
-            // For MVP, we add to the first pet
-            const targetPetId = this.state.pets[0].id;
-            await FirebaseService.addVaccinationRecord(targetPetId, newRecord);
-            alert('Vaccination record added to cloud!');
-        } catch (error) {
-            this.state.pets[0].vaccinations.unshift(newRecord);
-            alert('Record saved locally (Firebase not configured)');
-        }
-        
-        window.location.hash = '#vaccination-book';
+        const pets = JSON.parse(localStorage.getItem('pets') || '[]');
+        pets.push(newPet);
+        localStorage.setItem('pets', JSON.stringify(pets));
+        alert('Pet Registered!');
+        window.location.hash = '#my-pets';
     }
 
     handleVetSearch(e) {
         const query = e.target.value.toLowerCase();
-        const filteredVets = mockVets.filter(vet => 
-            vet.name.toLowerCase().includes(query) || 
-            vet.location.toLowerCase().includes(query)
+        const filteredVets = this.state.vets.filter(v => 
+            v.name.toLowerCase().includes(query) || v.clinic.toLowerCase().includes(query)
         );
-        
-        const vetList = document.getElementById('vet-list');
-        if (vetList) {
-            vetList.innerHTML = filteredVets.map(vet => `
+        const grid = document.getElementById('vet-results-grid');
+        if (grid) {
+            grid.innerHTML = filteredVets.map(v => `
                 <div class="card vet-card">
-                    <div class="flex justify-between items-start mb-10">
-                        <h3>${vet.name}</h3>
-                        <div class="rating-badge">
-                            <i data-lucide="star" class="star-icon"></i>
-                            <span>${vet.rating}</span>
-                        </div>
-                    </div>
-                    <p class="text-muted mb-5"><i data-lucide="map-pin" class="inline-icon"></i> ${vet.location}</p>
-                    <p class="text-muted mb-20"><i data-lucide="phone" class="inline-icon"></i> ${vet.phone}</p>
-                    <div class="vet-footer">
-                        <span class="specialty-tag">${vet.specialty.split(',')[0]}</span>
-                        <a href="#" class="btn btn-outline btn-sm">View Profile</a>
-                    </div>
+                    <h3>${v.name}</h3>
+                    <p>${v.clinic}</p>
+                    <button class="btn btn-outline w-full mt-10" onclick="location.hash='#book-vet'">Book</button>
                 </div>
             `).join('');
-            lucide.createIcons();
         }
     }
 
+    handleBookingSubmit(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const booking = {
+            id: 'BK-' + Date.now(),
+            petName: formData.get('petName'),
+            vetName: formData.get('vetName'),
+            date: formData.get('date'),
+            time: formData.get('time'),
+            reason: formData.get('reason'),
+            status: 'pending',
+            ownerId: currentUser.id,
+            ownerName: currentUser.fullName
+        };
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        bookings.push(booking);
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+        alert('Booking sent!');
+        window.location.hash = '#dashboard';
+    }
+
+    handleProfileUpdate(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const updated = { ...currentUser, fullName: formData.get('fullName'), email: formData.get('email') };
+        localStorage.setItem('currentUser', JSON.stringify(updated));
+        alert('Profile updated!');
+    }
+
+    handleDashboardUI(path) {
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        const sidebar = document.querySelector('.dashboard-sidebar');
+        if (toggle && sidebar) toggle.onclick = () => sidebar.classList.toggle('show');
+
+        if (path === 'dashboard') this.populatePetOwnerDashboard();
+        if (path === 'vet-dashboard') this.populateVetDashboard();
+        
+        // Active Nav
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.toggle('active', item.getAttribute('href') === `#${path}`);
+        });
+    }
+
+    populatePetOwnerDashboard() {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const pets = JSON.parse(localStorage.getItem('pets') || '[]');
+        const userPets = pets.filter(p => p.ownerId === user.id);
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        const userBookings = bookings.filter(b => b.ownerId === user.id);
+
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('dash-total-pets', userPets.length);
+        set('dash-approved-bookings', userBookings.filter(b => b.status === 'approved').length);
+
+        const list = document.getElementById('upcoming-activities');
+        if (list) {
+            list.innerHTML = userBookings.length ? userBookings.map(b => `
+                <div class="activity-item">
+                    <div class="activity-details">
+                        <strong>${b.petName}</strong> - ${b.date}
+                    </div>
+                    <span class="status-badge ${b.status}">${b.status}</span>
+                </div>
+            `).join('') : '<p class="text-muted">No activities.</p>';
+        }
+    }
+
+    populateVetDashboard() {
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        const pending = bookings.filter(b => b.status === 'pending');
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('vet-total-requests', pending.length);
+
+        const list = document.getElementById('incoming-requests-list');
+        if (list) {
+            list.innerHTML = pending.length ? pending.map(b => `
+                <div class="request-card">
+                    <h4>${b.petName}</h4>
+                    <p>${b.reason}</p>
+                    <div class="flex gap-10">
+                        <button class="btn btn-primary btn-sm" onclick="updateBookingStatus('${b.id}', 'approved')">Approve</button>
+                        <button class="btn btn-outline btn-sm" onclick="updateBookingStatus('${b.id}', 'rejected')">Reject</button>
+                    </div>
+                </div>
+            `).join('') : '<p class="text-muted">No requests.</p>';
+        }
+    }
+
+    updateNavigation() {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const loginLink = document.getElementById('login-link');
+        const registerLink = document.getElementById('register-link');
+        const profileLink = document.getElementById('profile-link');
+
+        if (user && user.id) {
+            if (loginLink) loginLink.style.display = 'none';
+            if (registerLink) registerLink.style.display = 'none';
+            if (profileLink) {
+                profileLink.style.display = 'block';
+                profileLink.href = user.role ? (user.role === 'veterinarian' ? '#vet-dashboard' : '#dashboard') : '#role-selection';
+                profileLink.textContent = 'My Dashboard';
+            }
+        } else {
+            if (loginLink) loginLink.style.display = 'block';
+            if (registerLink) registerLink.style.display = 'block';
+            if (profileLink) profileLink.style.display = 'none';
+        }
+    }
 }
 
-// Mobile Menu specific CSS to be injected if not already in style.css
-const style = document.createElement('style');
-style.textContent = `
-    .nav-links.show-mobile {
-        display: flex !important;
-        flex-direction: column;
-        position: absolute;
-        top: var(--nav-height);
-        left: 0;
-        width: 100%;
-        background: white;
-        padding: 20px;
-        box-shadow: var(--shadow-md);
-        gap: 20px;
-        z-index: 999;
-    }
-    
-    .show-mobile li {
-        width: 100%;
-    }
-    
-    .show-mobile a {
-        display: block;
-        width: 100%;
-        padding: 10px 0;
-    }
-`;
-document.head.appendChild(style);
-
-// Global logout function
-window.handleLogout = function() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('currentUser');
-        alert('You have been logged out successfully.');
-        window.location.hash = '#home';
-    }
-};
-
-// Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
-    new VetLinkApp();
-});
+document.addEventListener('DOMContentLoaded', () => new VetLinkApp());

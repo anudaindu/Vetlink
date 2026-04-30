@@ -65,6 +65,38 @@ const DashboardLayout = (content, activeId, role = 'pet-owner') => {
     `;
 };
 
+
+export const RoleSelectionPage = () => {
+    return `
+        <div class="container page-container">
+            <div class="hero-content text-center py-60">
+                <h1>Welcome to VetLink</h1>
+                <p class="text-muted mb-40">Please choose your role to continue</p>
+                
+                <div class="role-selection-grid">
+                    <div class="role-card" onclick="selectRole('pet-owner')">
+                        <div class="role-icon">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <h2>Pet Owner</h2>
+                        <p>Track your pet's vaccinations, health records, and book appointments.</p>
+                        <button class="btn btn-primary w-full mt-20">Continue as Owner</button>
+                    </div>
+                    
+                    <div class="role-card" onclick="selectRole('veterinarian')">
+                        <div class="role-icon vet-icon">
+                            <i data-lucide="stethoscope"></i>
+                        </div>
+                        <h2>Veterinarian</h2>
+                        <p>Manage patients, verify vaccinations, and handle booking requests.</p>
+                        <button class="btn btn-outline w-full mt-20">Continue as Vet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
 // Booking System Components
 
 export const HomePage = () => `
