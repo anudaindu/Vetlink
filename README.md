@@ -23,9 +23,9 @@ To save your changes to GitHub easily:
    This will automatically stage all changes, commit them, and push them to your repository on the `main` branch.
 
 ## Deployment
-This project is configured for **Render Blueprint** deployment.
+This project is configured for **Vercel** deployment.
 - Connected via GitHub: Automatically deploys on every push to `main`.
-- Site Config: See `render.yaml`.
+- Site Config: See `vercel.json`.
 
 ## Project Structure
 - `index.html`: Entry point.

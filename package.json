@@ -1,14 +1,12 @@
 {
-  "name": "vetlink",
+  "name": "vetlink-frontend",
   "version": "1.0.0",
-  "description": "Smart Pet Health & Vaccination Tracker with Real-Time Booking System",
+  "description": "VetLink Frontend - Real-time Veterinary Booking System",
   "scripts": {
-    "start": "open index.html",
-    "dev": "vercel dev",
-    "build": "echo 'No build needed for static site'",
-    "deploy": "vercel --prod",
-    "save": "git add . && git commit -m \"Save changes\" && git push origin main",
-    "status": "git status"
+    "start": "python3 -m http.server 3000",
+    "dev": "python3 -m http.server 3000",
+    "build": "echo 'Frontend build complete'",
+    "deploy": "vercel --prod"
   },
   "author": "Anuda H",
   "license": "MIT",

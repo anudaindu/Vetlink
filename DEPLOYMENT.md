@@ -40,7 +40,6 @@ npm run dev
 
 - `vercel.json` - Vercel deployment configuration
 - `package.json` - Updated with Vercel scripts
-- `render.yaml` - Updated deployment notes
 
 ## 🌐 Access After Deployment
 
