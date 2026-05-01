@@ -3,6 +3,7 @@
   "name": "vetlink-frontend",
   "cleanUrls": true,
   "trailingSlash": false,
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/(.*)",

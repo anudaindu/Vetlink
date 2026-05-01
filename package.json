@@ -4,9 +4,7 @@
   "description": "VetLink Frontend - Real-time Veterinary Booking System",
   "scripts": {
     "start": "python3 -m http.server 3000",
-    "dev": "python3 -m http.server 3000",
-    "build": "echo 'Frontend build complete'",
-    "deploy": "vercel --prod"
+    "dev": "python3 -m http.server 3000"
   },
   "author": "Anuda H",
   "license": "MIT",
