@@ -191,58 +191,138 @@ export const PetOwnerDashboardPage = () => {
         <div class="dashboard-welcome">
             <div>
                 <h1>Welcome back, ${currentUser.fullName || 'Pet Owner'}! 👋</h1>
-                <p class="text-muted">Here's what's happening with your pets today.</p>
+                <p class="text-muted">Manage your pets and their health records.</p>
             </div>
-            <a href="#book-vet" class="btn btn-primary">
-                <i data-lucide="calendar-plus"></i> Book a Vet
-            </a>
+            <div class="flex gap-10">
+                <a href="#register-pet" class="btn btn-outline">
+                    <i data-lucide="plus"></i> Add New Pet
+                </a>
+                <a href="#book-vet" class="btn btn-primary">
+                    <i data-lucide="calendar-plus"></i> Book a Vet
+                </a>
+            </div>
+        </div>
+
+        <div class="grid-2-1 mt-30">
+            <div class="card">
+                <div class="card-header-flex">
+                    <h3>My Pets & Recent History</h3>
+                    <a href="#my-pets" class="text-sm">View All</a>
+                </div>
+                <div id="dashboard-pets-history" class="activity-list mt-20">
+                    <div class="text-center py-20 text-muted">
+                        <i data-lucide="loader-2" class="spin"></i>
+                        <p>Loading pet records...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header-flex">
+                    <h3>Quick Access</h3>
+                    <i data-lucide="zap"></i>
+                </div>
+                <div class="quick-access-grid mt-20">
+                    <a href="#find-vet" class="quick-access-item">
+                        <div class="icon bg-primary-light text-primary"><i data-lucide="search"></i></div>
+                        <span>Find New Vet</span>
+                    </a>
+                    <a href="#book-vet" class="quick-access-item">
+                        <div class="icon bg-success-light text-success"><i data-lucide="calendar-check"></i></div>
+                        <span>Re-book Last Vet</span>
+                    </a>
+                    <a href="#account" class="quick-access-item">
+                        <div class="icon bg-warning-light text-warning"><i data-lucide="user-plus"></i></div>
+                        <span>Switch Account</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-30">
+            <div class="card-header-flex">
+                <h3>Last Vaccination Details</h3>
+                <i data-lucide="shield-check"></i>
+            </div>
+            <div id="last-vaccination-summary" class="mt-20">
+                <div class="text-center py-20 text-muted">Select a pet to see vaccination details.</div>
+            </div>
+        </div>
+    `, 'dashboard', 'pet-owner');
+};
+
+export const PetDetailsPage = () => {
+    const pet = JSON.parse(localStorage.getItem('currentPetView') || '{}');
+    return DashboardLayout(`
+        <div class="page-header">
+            <div class="flex items-center gap-15">
+                <a href="#my-pets" class="btn-icon"><i data-lucide="arrow-left"></i></a>
+                <div>
+                    <h1>${pet.name || 'Pet Details'}</h1>
+                    <p class="text-muted">${pet.type} • ${pet.breed}</p>
+                </div>
+            </div>
+            <div class="flex gap-10">
+                <button class="btn btn-outline btn-sm" onclick="location.hash='#book-vet'">Book Appointment</button>
+            </div>
         </div>
 
         <div class="grid-3 mt-30">
             <div class="card stat-card">
-                <div class="stat-icon bg-primary-light"><i data-lucide="dog"></i></div>
-                <div class="stat-info">
-                    <span class="stat-value" id="dash-total-pets">0</span>
-                    <span class="stat-label">My Pets</span>
-                </div>
+                <div class="stat-label">Age</div>
+                <div class="stat-value">${calculateAge(pet.dob)}</div>
             </div>
             <div class="card stat-card">
-                <div class="stat-icon bg-success-light"><i data-lucide="check-circle"></i></div>
-                <div class="stat-info">
-                    <span class="stat-value" id="dash-approved-bookings">0</span>
-                    <span class="stat-label">Approved Bookings</span>
-                </div>
+                <div class="stat-label">Last Vaccination</div>
+                <div class="stat-value text-primary">${pet.lastVaccination || 'None'}</div>
             </div>
             <div class="card stat-card">
-                <div class="stat-icon bg-warning-light"><i data-lucide="clock"></i></div>
-                <div class="stat-info">
-                    <span class="stat-value" id="dash-upcoming-vaccines">0</span>
-                    <span class="stat-label">Upcoming Shots</span>
-                </div>
+                <div class="stat-label">Pet ID</div>
+                <div class="stat-value text-muted">${pet.id || 'N/A'}</div>
             </div>
         </div>
 
-        <div class="grid-2 mt-30">
-            <div class="card">
-                <div class="card-header-flex">
-                    <h3>Upcoming Activities</h3>
-                    <i data-lucide="calendar"></i>
-                </div>
-                <div id="upcoming-activities" class="activity-list mt-15">
-                    <div class="text-center py-20 text-muted">No upcoming activities found.</div>
-                </div>
+        <div class="card mt-30">
+            <div class="card-header-flex">
+                <h3>Virtual Vaccination Book</h3>
+                <button class="btn btn-primary btn-sm"><i data-lucide="download"></i> Download PDF</button>
             </div>
-            <div class="card">
-                <div class="card-header-flex">
-                    <h3>Recent Activity</h3>
-                    <i data-lucide="clock"></i>
-                </div>
-                <div id="recent-activity" class="activity-list mt-15">
-                    <div class="text-center py-20 text-muted">No recent activity.</div>
-                </div>
+            <div class="table-container mt-20">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Vaccine</th>
+                            <th>Date</th>
+                            <th>Veterinarian</th>
+                            <th>Status</th>
+                            <th>Next Due</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vaccination-history-list">
+                        ${pet.vaccinations?.length ? pet.vaccinations.map(v => `
+                            <tr>
+                                <td><strong>${v.name}</strong></td>
+                                <td>${v.date}</td>
+                                <td>${v.vetName}</td>
+                                <td><span class="status-badge approved">Verified</span></td>
+                                <td>${v.nextDue || '-'}</td>
+                            </tr>
+                        `).join('') : '<tr><td colspan="5" class="text-center py-40 text-muted">No vaccination records found for this pet.</td></tr>'}
+                    </tbody>
+                </table>
             </div>
         </div>
-    `, 'dashboard', 'pet-owner');
+    `, 'my-pets', 'pet-owner');
+};
+
+const calculateAge = (dob) => {
+    if (!dob) return 'N/A';
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+    return age + ' years';
 };
 
 export const MyPetsPage = () => {
@@ -295,6 +375,29 @@ export const AccountPage = () => {
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </form>
+            </div>
+
+            <div class="card mt-20">
+                <div class="card-header-flex">
+                    <h3>Linked Accounts</h3>
+                    <i data-lucide="users"></i>
+                </div>
+                <p class="text-sm text-muted mb-20">Add or switch between multiple VetLink accounts.</p>
+                <div class="linked-accounts-list">
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="pet-avatar-sm">${user.fullName?.charAt(0) || 'U'}</div>
+                            <div>
+                                <strong>${user.fullName} (Current)</strong>
+                                <p class="text-xs text-muted">${user.email}</p>
+                            </div>
+                        </div>
+                        <span class="status-badge approved">Active</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline w-full mt-20" onclick="alert('Account switching feature coming soon!')">
+                    <i data-lucide="plus"></i> Add New Account
+                </button>
             </div>
 
             <div class="card mt-20 border-danger">
@@ -372,30 +475,39 @@ export const RegisterPetPage = () => {
 export const FindVetPage = () => {
     return DashboardLayout(`
         <div class="page-header">
-            <h1>Find a Veterinarian</h1>
-            <p class="text-muted">Connect with verified veterinary surgeons near you.</p>
-        </div>
-
-        <div class="search-section mt-30">
-            <div class="card search-card">
-                <div class="search-bar-container">
-                    <i data-lucide="search"></i>
-                    <input type="text" id="vet-search-input" placeholder="Search by name, clinic, or location...">
-                    <button class="btn btn-primary">Search</button>
-                </div>
-                <div class="filter-tags mt-15">
-                    <span class="filter-tag active">All</span>
-                    <span class="filter-tag">Nearby</span>
-                    <span class="filter-tag">Open Now</span>
-                    <span class="filter-tag">Home Visits</span>
-                </div>
+            <div>
+                <h1>Find a Veterinary Surgeon</h1>
+                <p class="text-muted">Search for vets or re-book a previous session.</p>
             </div>
         </div>
 
-        <div class="vets-list-container mt-30" id="vets-list">
-            <div class="text-center py-60">
-                <i data-lucide="loader-2" class="spin icon-lg text-muted"></i>
-                <p class="mt-10">Searching for available vets...</p>
+        <div class="grid-2-1 mt-30">
+            <div>
+                <div class="card">
+                    <div class="card-header-flex">
+                        <h3>Find New Vet</h3>
+                        <div class="search-box-sm">
+                            <i data-lucide="search"></i>
+                            <input type="text" id="vet-search-input" placeholder="Search by name or clinic...">
+                        </div>
+                    </div>
+                    <div id="vet-results-grid" class="vets-list-container mt-20">
+                        <div class="text-center py-40 text-muted">Start typing to find veterinarians...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card">
+                    <div class="card-header-flex">
+                        <h3>Direct Book</h3>
+                        <i data-lucide="history"></i>
+                    </div>
+                    <p class="text-xs text-muted mb-15">Quickly book a vet you've visited before.</p>
+                    <div id="previous-vets-list" class="activity-list">
+                        <div class="text-center py-20 text-muted">No previous bookings found.</div>
+                    </div>
+                </div>
             </div>
         </div>
     `, 'find-vet', 'pet-owner');

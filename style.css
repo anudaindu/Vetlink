@@ -1973,3 +1973,84 @@ textarea.form-input {
         padding: 20px;
     }
 }
+
+/* Grid Layouts */
+.grid-2-1 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 992px) {
+    .grid-2-1 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Quick Access */
+.quick-access-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.quick-access-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid var(--border-light);
+}
+
+.quick-access-item:hover {
+    background: white;
+    transform: translateX(5px);
+    box-shadow: var(--shadow);
+    border-color: var(--primary);
+}
+
+.quick-access-item .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Pet History List */
+.history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pet-avatar-sm {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}

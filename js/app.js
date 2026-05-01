@@ -15,7 +15,8 @@ import {
     VetSettingsPage,
     VetProfilePage,
     RoleSelectionPage,
-    AdminAddVetPage
+    AdminAddVetPage,
+    PetDetailsPage
 } from './pages.js';
 import { mockPets, mockVets } from './data.js';
 
@@ -65,11 +66,18 @@ class VetLinkApp {
             }
         };
 
-        // Routing
         window.addEventListener('hashchange', () => {
             this.state.currentPath = window.location.hash || '#home';
             this.handleRoute();
         });
+
+        window.viewPetDetails = (petId) => {
+            const pet = this.state.pets.find(p => p.id === petId);
+            if (pet) {
+                localStorage.setItem('currentPetView', JSON.stringify(pet));
+                window.location.hash = '#pet-details';
+            }
+        };
 
         // Mobile menu toggle
         if (this.mobileMenuBtn) {
@@ -129,6 +137,7 @@ class VetLinkApp {
             case 'find-vet': html = FindVetPage(); break;
             case 'book-vet': html = BookVetPage(); break;
             case 'account': html = AccountPage(); break;
+            case 'pet-details': html = PetDetailsPage(); break;
             case 'vet-dashboard': 
                 if (currentUser.role === 'pet-owner') { window.location.hash = '#dashboard'; return; }
                 html = VetDashboardPage(); 
@@ -296,6 +305,9 @@ class VetLinkApp {
 
         if (path === 'dashboard') this.populatePetOwnerDashboard();
         if (path === 'vet-dashboard') this.populateVetDashboard();
+        if (path === 'find-vet') this.populateFindVetPage();
+        if (path === 'my-pets') this.populateMyPetsPage();
+        if (path === 'pet-details') this.populatePetDetails();
         
         // Active Nav
         document.querySelectorAll('.nav-item').forEach(item => {
@@ -306,32 +318,106 @@ class VetLinkApp {
     populatePetOwnerDashboard() {
         const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
         const pets = JSON.parse(localStorage.getItem('pets') || '[]');
-        const userPets = pets.filter(p => p.ownerId === user.id);
+        const userPets = pets.filter(p => p.ownerId === user.id || !p.ownerId); // Show mock pets too for demo
         const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
         const userBookings = bookings.filter(b => b.ownerId === user.id);
 
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set('dash-total-pets', userPets.length);
-        set('dash-approved-bookings', userBookings.filter(b => b.status === 'approved').length);
-
-        const list = document.getElementById('upcoming-activities');
-        if (list) {
-            list.innerHTML = userBookings.length ? userBookings.map(b => `
-                <div class="activity-item">
-                    <div class="activity-details">
-                        <strong>${b.petName}</strong> - ${b.date}
+        // Pet History List
+        const historyList = document.getElementById('dashboard-pets-history');
+        if (historyList) {
+            historyList.innerHTML = userPets.length ? userPets.map(p => `
+                <div class="history-item cursor-pointer" onclick="viewPetDetails('${p.id}')">
+                    <div class="history-info">
+                        <div class="pet-avatar-sm">${p.name.charAt(0)}</div>
+                        <div>
+                            <strong>${p.name}</strong>
+                            <p class="text-xs text-muted">${p.type} • Last visit: ${p.lastVaccination || 'None'}</p>
+                        </div>
                     </div>
-                    <span class="status-badge ${b.status}">${b.status}</span>
+                    <i data-lucide="chevron-right" class="text-light"></i>
                 </div>
-            `).join('') : '<p class="text-muted">No activities.</p>';
+            `).join('') : '<p class="text-muted p-20 text-center">No pets registered yet.</p>';
         }
+
+        // Last Vaccination Summary
+        const lastVacSummary = document.getElementById('last-vaccination-summary');
+        if (lastVacSummary && userPets.length > 0) {
+            const latestPet = userPets[0];
+            lastVacSummary.innerHTML = `
+                <div class="flex items-center justify-between p-15 bg-primary-light rounded-md">
+                    <div>
+                        <span class="text-xs uppercase font-bold text-primary">Last Record: ${latestPet.name}</span>
+                        <h4 class="mt-5">${latestPet.vaccinations?.[0]?.name || 'Routine Checkup'}</h4>
+                        <p class="text-sm text-muted">Administered on ${latestPet.vaccinations?.[0]?.date || latestPet.lastVaccination || 'N/A'}</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="viewPetDetails('${latestPet.id}')">View Book</button>
+                </div>
+            `;
+        }
+        
+        lucide.createIcons();
+    }
+
+    populateFindVetPage() {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+        const previousVets = bookings
+            .filter(b => b.ownerId === user.id && b.status === 'approved')
+            .map(b => b.vetName);
+        
+        const uniqueVets = [...new Set(previousVets)];
+        
+        const list = document.getElementById('previous-vets-list');
+        if (list) {
+            list.innerHTML = uniqueVets.length ? uniqueVets.map(vetName => `
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="pet-avatar-sm">${vetName.charAt(0)}</div>
+                        <div>
+                            <strong>${vetName}</strong>
+                            <p class="text-xs text-muted">Previously visited</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="location.hash='#book-vet'">Book</button>
+                </div>
+            `).join('') : '<p class="text-muted p-10">No previous vets found.</p>';
+        }
+    }
+
+    populateMyPetsPage() {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        const pets = JSON.parse(localStorage.getItem('pets') || '[]');
+        const userPets = pets.filter(p => p.ownerId === user.id || !p.ownerId);
+        
+        const grid = document.getElementById('user-pets-list');
+        if (grid) {
+            grid.innerHTML = userPets.map(p => `
+                <div class="card pet-card cursor-pointer hover-scale" onclick="viewPetDetails('${p.id}')">
+                    <img src="${p.image}" alt="${p.name}" class="pet-image">
+                    <div class="p-15">
+                        <h3>${p.name}</h3>
+                        <p class="text-muted text-sm">${p.type} • ${p.breed}</p>
+                        <div class="mt-10 flex justify-between items-center">
+                            <span class="text-xs text-primary font-bold">View History</span>
+                            <i data-lucide="chevron-right" class="text-primary size-16"></i>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+    }
+
+    populatePetDetails() {
+        // Data is already bound in PetDetailsPage template using currentPetView from localStorage
+        lucide.createIcons();
     }
 
     populateVetDashboard() {
         const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
         const pending = bookings.filter(b => b.status === 'pending');
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set('vet-total-requests', pending.length);
+        const el = document.getElementById('vet-total-requests');
+        if (el) el.textContent = pending.length;
 
         const list = document.getElementById('incoming-requests-list');
         if (list) {
@@ -371,3 +457,4 @@ class VetLinkApp {
 }
 
 document.addEventListener('DOMContentLoaded', () => new VetLinkApp());
+
