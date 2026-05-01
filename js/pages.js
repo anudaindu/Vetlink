@@ -32,8 +32,7 @@ const DashboardLayout = (content, activeId, role = 'pet-owner') => {
             <aside class="dashboard-sidebar">
                 <div class="sidebar-header">
                     <div class="logo-container">
-                        <div class="logo-placeholder"><i data-lucide="shield-plus"></i></div>
-                        <span class="app-name">VetLink</span>
+                        <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
                     </div>
                 </div>
                 <nav class="sidebar-nav">
@@ -80,7 +79,7 @@ export const RoleSelectionPage = () => {
                         </div>
                         <h2>Pet Owner</h2>
                         <p>Track your pet's vaccinations, health records, and book appointments.</p>
-                        <button class="btn btn-primary w-full mt-20">Continue as Owner</button>
+                        <button class="btn btn-dark w-full mt-20">Continue as Owner</button>
                     </div>
                     
                     <div class="role-card" onclick="selectRole('veterinarian')">
@@ -315,8 +314,7 @@ export const LoginPage = () => `
             <div class="card">
                 <div class="text-center mb-30">
                     <div class="logo-container justify-center mb-10">
-                        <div class="logo-placeholder"><i data-lucide="shield-plus"></i></div>
-                        <span class="app-name">VetLink</span>
+                        <img src="assets/logo.png" alt="VetLink Logo" class="logo-img">
                     </div>
                     <p class="text-muted">Welcome back! Sign in to your account.</p>
                 </div>
