@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetLink - Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-primary-light">
+    <nav class="navbar">
+        <div class="container flex items-center" style="justify-content: space-between;">
+            <div class="logo-container">
+                <a href="index.html" class="flex items-center gap-10" style="text-decoration: none; color: inherit;">
+                    <img src="assets/logo.png" alt="VetLink Logo" style="height: 40px;">
+                    <span style="font-weight: 700; font-size: 1.25rem;">VetLink</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="login.html" class="active">Login</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-container py-60 flex justify-center items-center" style="min-height: calc(100vh - 70px);">
+        <div class="auth-card-container fade-in" style="width: 100%; max-width: 440px;">
+            <div class="card p-40">
+                <div class="text-center mb-30">
+                    <img src="assets/logo.png" alt="VetLink Logo" style="height: 48px; margin-bottom: 1rem;">
+                    <h2>Welcome Back</h2>
+                    <p class="text-muted">Sign in to your VetLink account</p>
+                </div>
+                
+                <form id="login-form">
+                    <div class="input-group mb-20">
+                        <label for="identifier" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email or Username (AK)</label>
+                        <input type="text" id="identifier" name="identifier" class="w-full" placeholder="Enter email or username" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                    </div>
+                    <div class="input-group mb-25">
+                        <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password</label>
+                        <input type="password" id="password" name="password" class="w-full" placeholder="Enter your password" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full mb-20" style="justify-content: center; padding: 0.85rem; font-weight: 600;">Sign In</button>
+                    
+                    <div class="text-center">
+                        <p class="text-sm">Don't have an account? <a href="register.html" class="text-primary" style="font-weight: 600;">Create Account</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        lucide.createIcons();
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('identifier').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            
+            if (typeof VetLink === 'undefined') {
+                showToast('System error. Please try again later.', 'error');
+                return;
+            }
+
+            const users = VetLink.getUsers() || [];
+            // Match against email OR username
+            let user = users.find(u => 
+                ((u.email && u.email.toLowerCase() === identifier) || 
+                 (u.username && u.username.toLowerCase() === identifier)) && 
+                (u.password === password || u.password_hash === password)
+            );
+
+            // Also check mock vets if logging in as vet
+            if (!user && VetLink.mockVets) {
+                const mockVet = VetLink.mockVets.find(v => 
+                    (v.email.toLowerCase() === identifier || (v.username && v.username.toLowerCase() === identifier))
+                );
+                if (mockVet && (password === 'password' || password === '123456' || password === 'admin')) {
+                    user = mockVet;
+                }
+            }
+            
+            if (user) {
+                // Ensure normalized properties
+                user.id = user.user_id || user.id;
+                user.role = VetLink.normalizeRole(user.user_role || user.role);
+                user.user_role = user.role;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                showToast('Signed in successfully!', 'success');
+                setTimeout(() => {
+                    if (user.role === 'veterinarian') {
+                        window.location.href = 'vet-dashboard.html';
+                    } else if (user.role === 'pet_owner') {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        window.location.href = 'role-selection.html';
+                    }
+                }, 800);
+            } else {
+                showToast('Invalid email/username or password. Please try again.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-days-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; margin-bottom: 10px; color: var(--text-muted); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-cell { min-height: 80px; padding: 5px; border: 1px solid var(--border-color); border-radius: 8px; position: relative; }
+        .calendar-cell.today { background: var(--primary-light); border-color: var(--primary-color); }
+        .calendar-cell.other-month { opacity: 0.5; background: #f9fafb; }
+        .calendar-cell .day-num { font-weight: 500; margin-bottom: 5px; display: block; }
+        .appt-dot { width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%; display: inline-block; margin: 2px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="vet-dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="vet-requests.html" class="nav-item">
+                    <i data-lucide="bell"></i><span>Incoming Requests</span>
+                </a>
+                <a href="vet-patients.html" class="nav-item">
+                    <i data-lucide="users"></i><span>My Patients</span>
+                </a>
+                <a href="vet-schedule.html" class="nav-item active">
+                    <i data-lucide="calendar"></i><span>Schedule</span>
+                </a>
+                <a href="vet-settings.html" class="nav-item">
+                    <i data-lucide="settings"></i><span>Settings</span>
+                </a>
+                <a href="vet-profile.html" class="nav-item">
+                    <i data-lucide="user-cog"></i><span>Profile</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="dashboard-main">
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">Dr. Name</span>
+                        <div class="avatar-sm" id="user-avatar-display">D</div>
+                    </div>
+                </div>
+            </header>
+            <div class="dashboard-content fade-in">
+                <h1 class="page-header mb-20">My Schedule</h1>
+                
+                <div class="grid-2-1" style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+                    <div class="card">
+                        <div class="calendar-header">
+                            <button class="btn btn-outline btn-sm" id="prev-month"><i data-lucide="chevron-left"></i></button>
+                            <h2 id="calendar-month-label" style="margin:0;">Month Year</h2>
+                            <button class="btn btn-outline btn-sm" id="next-month"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-days-header">
+                            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2 class="section-header mb-15">Upcoming Appointments</h2>
+                        <div id="upcoming-list" style="display:flex; flex-direction:column; gap:10px;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        let currentDate = new Date();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth() || !VetLink.requireRole('veterinarian')) return;
+            lucide.createIcons();
+
+            document.getElementById('prev-month').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+            document.getElementById('next-month').addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            renderCalendar();
+            renderUpcoming();
+        });
+
+        function renderCalendar() {
+            const monthLabel = document.getElementById('calendar-month-label');
+            const grid = document.getElementById('calendar-grid');
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            monthLabel.innerText = `${monthNames[month]} ${year}`;
+            
+            grid.innerHTML = '';
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            
+            const today = new Date();
+            
+            const bookings = VetLink.getBookings();
+            const user = VetLink.getCurrentUser();
+            const myBookings = bookings.filter(b => b.vetId === user.id && b.status === 'approved');
+            
+            // Fill previous month trailing days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const d = prevMonthDays - i;
+                grid.innerHTML += `<div class="calendar-cell other-month"><span class="day-num">${d}</span></div>`;
+            }
+            
+            // Fill current month
+            for (let i = 1; i <= daysInMonth; i++) {
+                const cellDate = new Date(year, month, i);
+                const dateStr = cellDate.toISOString().split('T')[0];
+                const isToday = cellDate.toDateString() === today.toDateString();
+                
+                const dayBookings = myBookings.filter(b => b.date === dateStr);
+                const dots = dayBookings.map(() => `<span class="appt-dot"></span>`).join('');
+                
+                grid.innerHTML += `
+                    <div class="calendar-cell ${isToday ? 'today' : ''}">
+                        <span class="day-num">${i}</span>
+                        <div>${dots}</div>
+                    </div>
+                `;
+            }
+            
+            // Fill next month leading days
+            const totalCells = firstDay + daysInMonth;
+            const remainingCells = 42 - totalCells; // 6 rows
+            for (let i = 1; i <= remainingCells; i++) {
+                grid.innerHTML += `<div class="calendar-cell other-month"><span class="day-num">${i}</span></div>`;
+            }
+        }
+
+        function renderUpcoming() {
+            const list = document.getElementById('upcoming-list');
+            const bookings = VetLink.getBookings();
+            const user = VetLink.getCurrentUser();
+            
+            const now = new Date().toISOString().split('T')[0];
+            const upcoming = bookings
+                .filter(b => b.vetId === user.id && b.status === 'approved' && b.date >= now)
+                .sort((a, b) => a.date.localeCompare(b.date));
+                
+            if (upcoming.length === 0) {
+                list.innerHTML = `<p class="text-muted">No upcoming appointments.</p>`;
+                return;
+            }
+            
+            list.innerHTML = upcoming.slice(0, 10).map(b => `
+                <div style="padding:10px; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-color);">
+                    <div style="display:flex; justify-content:space-between;">
+                        <strong>${b.date}</strong>
+                        <span class="text-primary">${b.time}</span>
+                    </div>
+                    <div class="text-sm" style="margin-top:5px;">
+                        ${b.petName} - ${b.type}
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

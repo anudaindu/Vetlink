@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Details & Vaccination Book - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="my-pets.html" class="nav-item active">
+                    <i data-lucide="dog"></i><span>My Pets</span>
+                </a>
+                <a href="register-pet.html" class="nav-item">
+                    <i data-lucide="plus-circle"></i><span>Register Pet</span>
+                </a>
+                <a href="find-vet.html" class="nav-item">
+                    <i data-lucide="search"></i><span>Find Vet</span>
+                </a>
+                <a href="book-vet.html" class="nav-item">
+                    <i data-lucide="calendar-plus"></i><span>Book Vet</span>
+                </a>
+                <a href="account.html" class="nav-item">
+                    <i data-lucide="user"></i><span>Account</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">User</span>
+                        <div class="avatar-sm" id="user-avatar-display">U</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content fade-in">
+
+                <div class="mb-20">
+                    <a href="my-pets.html" class="btn btn-outline btn-sm mb-15 inline-flex items-center gap-5">
+                        <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Back to My Pets
+                    </a>
+                    
+                    <div class="flex items-center" style="justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <div class="flex items-center gap-10">
+                                <h1 id="pet-name" style="margin: 0;">Pet Name</h1>
+                                <span class="status-badge" id="pet-id-pill" style="background: #e2e8f0; color: #334155;">PET-ID</span>
+                            </div>
+                            <p class="text-muted" id="pet-type-breed" style="margin: 4px 0 0;">Species • Breed</p>
+                        </div>
+                        
+                        <div class="flex gap-10">
+                            <button id="btn-open-vax-modal" class="btn btn-primary flex items-center gap-5">
+                                <i data-lucide="syringe" style="width: 16px; height: 16px;"></i> Add Vaccination Record
+                            </button>
+                            <a id="btn-book-vet-link" href="book-vet.html" class="btn btn-outline flex items-center gap-5">
+                                <i data-lucide="calendar" style="width: 16px; height: 16px;"></i> Book Appointment
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pet Attributes Summary (ER: pets) -->
+                <div class="grid-4 gap-15 mb-25">
+                    <div class="card stat-card">
+                        <p class="stat-label">Species (Entity: pets)</p>
+                        <h3 class="stat-value" id="pet-species" style="font-size: 1.25rem;">-</h3>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Gender (Entity: pets)</p>
+                        <h3 class="stat-value" id="pet-gender" style="font-size: 1.25rem;">-</h3>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Date of Birth & Age</p>
+                        <h3 class="stat-value" id="pet-age" style="font-size: 1.25rem;">-</h3>
+                        <small class="text-muted" id="pet-dob-display"></small>
+                    </div>
+                    <div class="card stat-card">
+                        <p class="stat-label">Total Vaccinations</p>
+                        <h3 class="stat-value" id="pet-vacc-count" style="font-size: 1.25rem;">0</h3>
+                    </div>
+                </div>
+
+                <!-- Vaccination Records Table (ER: vaccination_records) -->
+                <div class="card">
+                    <div class="card-header-flex mb-15 flex items-center" style="justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="shield-check" class="text-primary" style="width: 22px; height: 22px;"></i>
+                                Official Digital Vaccination Book
+                            </h3>
+                            <p class="text-muted text-sm" style="margin: 3px 0 0;">Updated by verified veterinarians per ER relationship</p>
+                        </div>
+                        <button class="btn btn-outline btn-sm flex items-center gap-5" onclick="window.print()">
+                            <i data-lucide="download" style="width: 14px; height: 14px;"></i> Download / Print
+                        </button>
+                    </div>
+
+                    <div class="table-container" style="overflow-x: auto;">
+                        <table class="admin-table w-full" style="text-align: left; width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                                    <th style="padding: 12px;">Date Given</th>
+                                    <th style="padding: 12px;">Used Vaccine (Dropdown)</th>
+                                    <th style="padding: 12px;">Administering Veterinarian (vet_profiles)</th>
+                                    <th style="padding: 12px;">Status</th>
+                                    <th style="padding: 12px;">Next Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vaccination-list">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Add Vaccination Record -->
+    <div id="vax-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="card" style="width: 100%; max-width: 520px; background: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto;">
+            <div class="flex items-center mb-20" style="justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="syringe" class="text-primary"></i>
+                    Record Vaccination (vaccination_records)
+                </h3>
+                <button id="btn-close-vax-modal" style="background: none; border: none; cursor: pointer; font-size: 1.25rem; color: #64748b;">&times;</button>
+            </div>
+
+            <form id="record-vax-form">
+                <!-- Date (vaccination_records.date) -->
+                <div class="input-group mb-15">
+                    <label for="vax-date" style="display: block; font-weight: 500; margin-bottom: 5px;">Date Administered *</label>
+                    <input type="date" id="vax-date" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                </div>
+
+                <!-- Used Vaccine Dropdown (vaccination_records.used_vaccine) -->
+                <div class="input-group mb-15">
+                    <label for="vax-used-vaccine" style="display: block; font-weight: 500; margin-bottom: 5px;">Used Vaccine * (Dropdown)</label>
+                    <select id="vax-used-vaccine" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white;">
+                        <option value="">Select Vaccine</option>
+                    </select>
+                </div>
+
+                <!-- Custom Vaccine input if Other is selected -->
+                <div class="input-group mb-15" id="custom-vaccine-group" style="display: none;">
+                    <label for="custom-vaccine-name" style="display: block; font-weight: 500; margin-bottom: 5px;">Specify Vaccine Name</label>
+                    <input type="text" id="custom-vaccine-name" placeholder="Enter vaccine details" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                </div>
+
+                <!-- Administering Vet Dropdown (vet_profiles.name, license number) -->
+                <div class="input-group mb-15">
+                    <label for="vax-vet-select" style="display: block; font-weight: 500; margin-bottom: 5px;">Veterinarian (vet_profiles) * (Dropdown)</label>
+                    <select id="vax-vet-select" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white;">
+                        <option value="">Select Veterinarian</option>
+                    </select>
+                </div>
+
+                <div class="input-group mb-20">
+                    <label for="vax-next-due" style="display: block; font-weight: 500; margin-bottom: 5px;">Next Due Date (Booster)</label>
+                    <input type="date" id="vax-next-due" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                </div>
+
+                <div class="flex gap-10" style="justify-content: flex-end;">
+                    <button type="button" id="btn-cancel-vax" class="btn btn-outline">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save to Vaccination Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth()) return;
+
+            const petId = VetLink.getParam('id');
+            const allPets = VetLink.getPets() || [];
+            const pet = allPets.find(p => (p.pet_id === petId || p.id === petId));
+
+            if (!pet) {
+                showToast('Pet not found.', 'error');
+                setTimeout(() => window.location.href = 'my-pets.html', 1200);
+                return;
+            }
+
+            const currentPetId = pet.pet_id || pet.id;
+            document.getElementById('pet-name').textContent = pet.name;
+            document.getElementById('pet-id-pill').textContent = currentPetId;
+            document.getElementById('btn-book-vet-link').href = `book-vet.html?petId=${currentPetId}`;
+
+            const species = pet.species || pet.type || 'Pet';
+            const breed = pet.breed || 'Breed';
+            const gender = pet.gender || 'Not specified';
+            const dob = pet.date_of_birth || pet.dob;
+
+            document.getElementById('pet-type-breed').textContent = `${species} • ${breed}`;
+            document.getElementById('pet-species').textContent = species;
+            document.getElementById('pet-gender').textContent = gender;
+            document.getElementById('pet-age').textContent = VetLink.calculateAge(dob);
+            document.getElementById('pet-dob-display').textContent = dob ? `DOB: ${dob}` : '';
+
+            // Render Vaccination Book Table
+            function renderVaccinations() {
+                const refreshedPets = VetLink.getPets();
+                const refreshedPet = refreshedPets.find(p => (p.pet_id === currentPetId || p.id === currentPetId)) || pet;
+                const records = refreshedPet.vaccination_records || refreshedPet.vaccinations || [];
+                
+                document.getElementById('pet-vacc-count').textContent = records.length;
+                const vaccList = document.getElementById('vaccination-list');
+
+                if (records.length === 0) {
+                    vaccList.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-30 text-muted" style="padding: 30px;">
+                                <i data-lucide="shield-alert" style="width: 32px; height: 32px; margin: 0 auto 8px; display: block; color: #94a3b8;"></i>
+                                No vaccination records found for ${pet.name}. Click "Add Vaccination Record" to record a vaccination.
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    vaccList.innerHTML = records.map(v => {
+                        const dateStr = v.date || '-';
+                        const vaxName = v.used_vaccine || v.vaccine || v.name || 'Vaccine';
+                        const vetName = v.vetName || v.veterinarian || v.vet || 'Dr. Nirmal Silva';
+                        const status = v.status || 'Verified';
+                        const nextDue = v.nextDue || 'N/A';
+
+                        return `
+                            <tr style="border-bottom: 1px solid #f1f5f9;">
+                                <td style="padding: 12px; font-weight: 500;">${dateStr}</td>
+                                <td style="padding: 12px;">
+                                    <span style="font-weight: 600; color: #1e293b;">${vaxName}</span>
+                                </td>
+                                <td style="padding: 12px;">
+                                    <div style="font-weight: 500;">${vetName}</div>
+                                    <span class="text-sm text-muted">SLVC Verified</span>
+                                </td>
+                                <td style="padding: 12px;">
+                                    <span class="status-badge" style="background: #dcfce7; color: #166534; font-size: 0.8rem;">
+                                        ${status}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px; color: #475569;">${nextDue}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+                lucide.createIcons();
+            }
+
+            renderVaccinations();
+
+            // Populate Modal Dropdowns
+            const vaxUsedSelect = document.getElementById('vax-used-vaccine');
+            VetLink.populateDropdown(vaxUsedSelect, VetLink.vaccineTypes, '', 'Select Used Vaccine');
+
+            const vetSelect = document.getElementById('vax-vet-select');
+            const availableVets = VetLink.getVets();
+            vetSelect.innerHTML = '<option value="">Select Veterinarian (vet_profiles)</option>';
+            availableVets.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name;
+                opt.textContent = `${v.name} (${v.license_number || 'SLVC-Registered'}) - ${v.specialization || v.specialty || 'General'}`;
+                vetSelect.appendChild(opt);
+            });
+
+            // Handle Custom Vaccine Name
+            const customGroup = document.getElementById('custom-vaccine-group');
+            const customInput = document.getElementById('custom-vaccine-name');
+            vaxUsedSelect.addEventListener('change', () => {
+                if (vaxUsedSelect.value === 'Other Vaccine') {
+                    customGroup.style.display = 'block';
+                    customInput.required = true;
+                    customInput.focus();
+                } else {
+                    customGroup.style.display = 'none';
+                    customInput.required = false;
+                }
+            });
+
+            // Modal Toggles
+            const modal = document.getElementById('vax-modal');
+            const openBtn = document.getElementById('btn-open-vax-modal');
+            const closeBtn = document.getElementById('btn-close-vax-modal');
+            const cancelBtn = document.getElementById('btn-cancel-vax');
+
+            function openModal() {
+                document.getElementById('vax-date').value = new Date().toISOString().split('T')[0];
+                modal.style.display = 'flex';
+                lucide.createIcons();
+            }
+            function closeModal() {
+                modal.style.display = 'none';
+                document.getElementById('record-vax-form').reset();
+                customGroup.style.display = 'none';
+            }
+
+            openBtn.addEventListener('click', openModal);
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+
+            // Handle Vaccination Record Submission
+            document.getElementById('record-vax-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                let vaccineName = vaxUsedSelect.value;
+                if (vaccineName === 'Other Vaccine' && customInput.value.trim()) {
+                    vaccineName = customInput.value.trim();
+                }
+
+                const dateVal = document.getElementById('vax-date').value;
+                const vetVal = vetSelect.value;
+                const nextDueVal = document.getElementById('vax-next-due').value;
+
+                // ER: vaccination_records attributes: date, used_vaccine, updated_by vet_profiles
+                const newRecord = {
+                    date: dateVal,
+                    used_vaccine: vaccineName,
+                    vaccine: vaccineName,
+                    veterinarian: vetVal,
+                    vetName: vetVal,
+                    status: 'Verified',
+                    nextDue: nextDueVal || 'N/A'
+                };
+
+                VetLink.addVaccinationRecord(currentPetId, newRecord);
+                showToast('Vaccination record added to Pet Book!', 'success');
+                closeModal();
+                renderVaccinations();
+            });
+        });
+    </script>
+</body>
+</html>

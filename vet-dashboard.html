@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vet Dashboard - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="vet-dashboard.html" class="nav-item active">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="vet-requests.html" class="nav-item">
+                    <i data-lucide="bell"></i><span>Incoming Requests</span>
+                </a>
+                <a href="vet-patients.html" class="nav-item">
+                    <i data-lucide="users"></i><span>My Patients</span>
+                </a>
+                <a href="vet-schedule.html" class="nav-item">
+                    <i data-lucide="calendar"></i><span>Schedule</span>
+                </a>
+                <a href="vet-settings.html" class="nav-item">
+                    <i data-lucide="settings"></i><span>Settings</span>
+                </a>
+                <a href="vet-profile.html" class="nav-item">
+                    <i data-lucide="user-cog"></i><span>Profile</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+        <main class="dashboard-main">
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">Dr. Name</span>
+                        <div class="avatar-sm" id="user-avatar-display">D</div>
+                    </div>
+                </div>
+            </header>
+            <div class="dashboard-content fade-in">
+                <div class="dashboard-welcome mb-20">
+                    <h1 id="welcome-message" class="page-header">Welcome back, Dr. Name! 👋</h1>
+                    <p class="text-muted">Here's an overview of your practice today.</p>
+                </div>
+
+                <div class="card mb-20">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                            <input type="text" id="pet-id-search" placeholder="Search by Pet ID (e.g. PET-1234)">
+                        </div>
+                        <button class="btn btn-primary" id="btn-search-pet">
+                            <i data-lucide="search" style="width: 18px; height: 18px;"></i> Search
+                        </button>
+                    </div>
+                    <div id="search-result" class="mt-10" style="display:none;"></div>
+                </div>
+
+                <div class="grid-4 mb-20">
+                    <div class="stat-card card">
+                        <div class="stat-label">Pending Requests</div>
+                        <div class="stat-value text-warning" id="stat-pending">0</div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-label">Today's Appointments</div>
+                        <div class="stat-value text-primary" id="stat-today">0</div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-label">Total Patients</div>
+                        <div class="stat-value" id="stat-patients">0</div>
+                    </div>
+                    <div class="stat-card card">
+                        <div class="stat-label">Estimated Earnings</div>
+                        <div class="stat-value text-success" id="stat-earnings">LKR 0</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h2 class="section-header">Recent Bookings</h2>
+                        <div class="activity-list" id="recent-bookings-list">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2 class="section-header">Quick Actions</h2>
+                        <div class="quick-access-grid" style="display: flex; flex-direction: column; gap: 10px;">
+                            <a href="vet-requests.html" class="btn btn-outline" style="justify-content: flex-start;">
+                                <i data-lucide="bell" style="margin-right: 10px;"></i> View Requests
+                            </a>
+                            <a href="vet-schedule.html" class="btn btn-outline" style="justify-content: flex-start;">
+                                <i data-lucide="calendar" style="margin-right: 10px;"></i> My Schedule
+                            </a>
+                            <a href="vet-settings.html" class="btn btn-outline" style="justify-content: flex-start;">
+                                <i data-lucide="settings" style="margin-right: 10px;"></i> Settings
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth() || !VetLink.requireRole('veterinarian')) return;
+
+            lucide.createIcons();
+            
+            const user = VetLink.getCurrentUser();
+            document.getElementById('welcome-message').innerText = `Welcome back, Dr. ${user.name}! 👋`;
+
+            renderDashboard();
+
+            document.getElementById('btn-search-pet').addEventListener('click', () => {
+                const query = document.getElementById('pet-id-search').value.trim().toLowerCase();
+                if (!query) return;
+                const pets = VetLink.getPets();
+                const pet = pets.find(p => 
+                    (p.pet_id && p.pet_id.toLowerCase() === query) || 
+                    (p.id && p.id.toLowerCase() === query) || 
+                    p.name.toLowerCase().includes(query)
+                );
+                
+                const resultDiv = document.getElementById('search-result');
+                if (pet) {
+                    const pId = pet.pet_id || pet.id;
+                    const vaxCount = (pet.vaccination_records || pet.vaccinations || []).length;
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `
+                        <div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <strong>${pet.name}</strong> <span class="status-badge" style="background:#e0e7ff; color:#3730a3; font-size:0.75rem;">${pId}</span> - Owner: <strong>${pet.owner || pet.ownerName || 'Pet Owner'}</strong><br>
+                                <span class="text-sm text-muted">Species: <strong>${pet.species || pet.type}</strong> &bull; Gender: <strong>${pet.gender || 'N/A'}</strong> &bull; Breed: <strong>${pet.breed || 'N/A'}</strong> &bull; Vaccines: <strong>${vaxCount} record(s)</strong></span>
+                            </div>
+                            <div class="flex gap-10">
+                                <a href="vet-patients.html" class="btn btn-primary btn-sm flex items-center gap-5">
+                                    <i data-lucide="syringe" style="width:14px;height:14px;"></i> Update Vaccine
+                                </a>
+                                <a href="pet-details.html?id=${pId}" class="btn btn-outline btn-sm">View Book &rarr;</a>
+                            </div>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                } else {
+                    resultDiv.style.display = 'none';
+                    showToast('No patient found with that ID or name.', 'warning');
+                }
+            });
+        });
+
+        function renderDashboard() {
+            const bookings = VetLink.getBookings();
+            const user = VetLink.getCurrentUser();
+            
+            const myBookings = bookings.filter(b => b.vetId === user.id);
+            
+            const pending = myBookings.filter(b => b.status === 'pending');
+            document.getElementById('stat-pending').innerText = pending.length;
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayAppts = myBookings.filter(b => b.date === todayStr && b.status === 'approved');
+            document.getElementById('stat-today').innerText = todayAppts.length;
+            
+            const uniquePets = new Set(myBookings.map(b => b.petId)).size;
+            document.getElementById('stat-patients').innerText = uniquePets;
+            
+            const earnings = myBookings.filter(b => b.status === 'approved').length * 2000; // Estimated 2000 per appt
+            document.getElementById('stat-earnings').innerText = `LKR ${earnings.toLocaleString()}`;
+
+            const recentList = document.getElementById('recent-bookings-list');
+            const recent = [...myBookings].reverse().slice(0, 5);
+            
+            if (recent.length === 0) {
+                recentList.innerHTML = '<p class="text-muted text-center py-20">No recent bookings.</p>';
+            } else {
+                recentList.innerHTML = recent.map(b => `
+                    <div class="history-item" style="display:flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 10px 0;">
+                        <div>
+                            <strong>${b.petName}</strong> - ${b.date} at ${b.time}
+                            <div class="text-sm text-muted">${b.type}</div>
+                        </div>
+                        <div>
+                            ${b.status === 'pending' ? `
+                                <button class="btn btn-primary btn-sm" onclick="updateBookingStatus('${b.id}', 'approved')">Approve</button>
+                                <button class="btn btn-outline text-danger btn-sm" onclick="updateBookingStatus('${b.id}', 'rejected')">Reject</button>
+                            ` : `<span class="status-badge ${b.status}">${b.status}</span>`}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        window.updateBookingStatus = function(id, status) {
+            if (status === 'rejected') {
+                showConfirmModal('Reject Booking', 'Are you sure you want to reject this booking?', () => {
+                    executeStatusUpdate(id, status);
+                }, 'Yes, Reject', 'danger');
+            } else {
+                executeStatusUpdate(id, status);
+            }
+        };
+
+        function executeStatusUpdate(id, status) {
+            const bookings = VetLink.getBookings();
+            const idx = bookings.findIndex(b => b.id === id);
+            if (idx !== -1) {
+                bookings[idx].status = status;
+                VetLink.saveBookings(bookings);
+                showToast(`Booking ${status}!`, status === 'approved' ? 'success' : 'info');
+                renderDashboard();
+            }
+        }
+    </script>
+</body>
+</html>

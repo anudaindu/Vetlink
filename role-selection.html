@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetLink - Select Role</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-primary-light">
+    <nav class="navbar">
+        <div class="container flex items-center" style="justify-content: space-between;">
+            <div class="logo-container">
+                <a href="index.html" class="flex items-center gap-10" style="text-decoration: none; color: inherit;">
+                    <img src="assets/logo.png" alt="VetLink Logo" style="height: 40px;">
+                    <span style="font-weight: 700; font-size: 1.25rem;">VetLink</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-container py-60">
+        <div class="container max-w-700 fade-in">
+            <div class="text-center mb-40">
+                <h2>Welcome to VetLink</h2>
+                <p class="text-muted" style="font-size: 1.125rem;">How would you like to use VetLink?</p>
+            </div>
+            
+            <div class="role-selection-grid grid-2 gap-30">
+                <div class="role-card card p-40 text-center" style="cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--primary-color)';" onmouseout="this.style.borderColor='transparent';">
+                    <div class="role-icon flex justify-center mb-20 text-primary">
+                        <i data-lucide="users" style="width: 64px; height: 64px;"></i>
+                    </div>
+                    <h3 class="mb-15">Pet Owner</h3>
+                    <p class="text-muted mb-30" style="min-height: 48px;">Track your pet's vaccinations, health records, and book appointments.</p>
+                    <button class="btn btn-dark w-full justify-center" id="btn-pet-owner">Continue as Owner</button>
+                </div>
+                
+                <div class="role-card card p-40 text-center" style="cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease;" onmouseover="this.style.borderColor='var(--primary-color)';" onmouseout="this.style.borderColor='transparent';">
+                    <div class="role-icon flex justify-center mb-20 text-primary">
+                        <i data-lucide="stethoscope" style="width: 64px; height: 64px;"></i>
+                    </div>
+                    <h3 class="mb-15">Veterinarian</h3>
+                    <p class="text-muted mb-30" style="min-height: 48px;">Manage patients, verify vaccinations, and handle booking requests.</p>
+                    <button class="btn btn-outline w-full justify-center" id="btn-vet">Continue as Vet</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        lucide.createIcons();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.isLoggedIn()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const currentUser = VetLink.getCurrentUser();
+            
+            if (currentUser && (currentUser.role || currentUser.user_role)) {
+                const r = VetLink.normalizeRole(currentUser.role || currentUser.user_role);
+                if (r === 'pet_owner') {
+                    window.location.href = 'dashboard.html';
+                } else if (r === 'veterinarian') {
+                    window.location.href = 'vet-dashboard.html';
+                }
+                return;
+            }
+            
+            function setRole(role, redirectUrl) {
+                if (!currentUser) return;
+                
+                currentUser.role = role;
+                currentUser.user_role = role;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                const users = VetLink.getUsers();
+                const userIndex = users.findIndex(u => (u.id === currentUser.id || u.user_id === currentUser.user_id));
+                if (userIndex !== -1) {
+                    users[userIndex].role = role;
+                    users[userIndex].user_role = role;
+                    VetLink.saveUsers(users);
+                }
+                
+                showToast('Welcome! Let\'s get started.', 'success');
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 1000);
+            }
+            
+            document.getElementById('btn-pet-owner').addEventListener('click', (e) => {
+                e.stopPropagation();
+                setRole('pet_owner', 'dashboard.html');
+            });
+            
+            document.getElementById('btn-vet').addEventListener('click', (e) => {
+                e.stopPropagation();
+                setRole('veterinarian', 'vet-dashboard.html');
+            });
+            
+            // Also allow clicking the whole card
+            document.querySelectorAll('.role-card')[0].addEventListener('click', () => {
+                setRole('pet_owner', 'dashboard.html');
+            });
+            
+            document.querySelectorAll('.role-card')[1].addEventListener('click', () => {
+                setRole('veterinarian', 'vet-dashboard.html');
+            });
+        });
+    </script>
+</body>
+</html>

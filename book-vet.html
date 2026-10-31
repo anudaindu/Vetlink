@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Vet Appointment - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="my-pets.html" class="nav-item">
+                    <i data-lucide="dog"></i><span>My Pets</span>
+                </a>
+                <a href="register-pet.html" class="nav-item">
+                    <i data-lucide="plus-circle"></i><span>Register Pet</span>
+                </a>
+                <a href="find-vet.html" class="nav-item">
+                    <i data-lucide="search"></i><span>Find Vet</span>
+                </a>
+                <a href="book-vet.html" class="nav-item active">
+                    <i data-lucide="calendar-plus"></i><span>Book Vet</span>
+                </a>
+                <a href="account.html" class="nav-item">
+                    <i data-lucide="user"></i><span>Account</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">User</span>
+                        <div class="avatar-sm" id="user-avatar-display">U</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content fade-in">
+
+                <div class="mb-20">
+                    <h1 style="margin: 0 0 5px;">Book a Veterinarian Appointment</h1>
+                    <p class="text-muted" style="margin: 0;">Connect your registered pet with verified vet practitioners</p>
+                </div>
+
+                <div class="grid-2-1 gap-20">
+                    <div class="card">
+                        <form id="book-vet-form">
+                            <!-- Select Pet (Dropdown) -->
+                            <div class="input-group mb-15">
+                                <label for="booking-pet" style="font-weight: 500; display: block; margin-bottom: 5px;">Select Patient Pet * (Dropdown)</label>
+                                <select id="booking-pet" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; background-color: white;">
+                                    <option value="">-- Choose Your Pet --</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Select Vet (Dropdown) -->
+                            <div class="input-group mb-15">
+                                <label for="booking-vet" style="font-weight: 500; display: block; margin-bottom: 5px;">Select Veterinarian (vet_profiles) * (Dropdown)</label>
+                                <select id="booking-vet" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; background-color: white;">
+                                    <option value="">-- Choose Veterinarian --</option>
+                                </select>
+                            </div>
+
+                            <!-- Reason for Visit (Dropdown) -->
+                            <div class="input-group mb-15">
+                                <label for="booking-service" style="font-weight: 500; display: block; margin-bottom: 5px;">Service / Reason for Visit * (Dropdown)</label>
+                                <select id="booking-service" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; background-color: white;">
+                                    <option value="">-- Select Medical Service --</option>
+                                    <option value="Vaccination & Booster Shot">Syringe / Vaccination & Booster Shot</option>
+                                    <option value="General Health Checkup">Routine Physical Health Checkup</option>
+                                    <option value="Deworming & Parasite Control">Deworming & Tick/Flea Control</option>
+                                    <option value="Dental Examination">Dental Cleaning & Oral Care</option>
+                                    <option value="Surgery Consultation">Surgical Evaluation & Consultation</option>
+                                    <option value="Emergency Treatment">Urgent Care / Emergency Illness</option>
+                                    <option value="Other">Other Clinical Consultation</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group mb-15">
+                                <label style="font-weight: 500; display: block; margin-bottom: 5px;">Visit Type *</label>
+                                <div class="flex gap-15">
+                                    <label class="flex items-center" style="cursor:pointer; border:1px solid #cbd5e1; padding:10px 14px; border-radius:6px; flex:1; background: #fff;">
+                                        <input type="radio" name="visitType" value="Clinic Visit" checked style="margin-right:8px;">
+                                        <span>
+                                            <strong>Clinic Visit</strong><br>
+                                            <small class="text-muted">Standard Consultation Fee</small>
+                                        </span>
+                                    </label>
+                                    <label class="flex items-center" style="cursor:pointer; border:1px solid #cbd5e1; padding:10px 14px; border-radius:6px; flex:1; background: #fff;">
+                                        <input type="radio" name="visitType" value="Home Visit" style="margin-right:8px;">
+                                        <span>
+                                            <strong>Home Visit</strong><br>
+                                            <small class="text-muted">+ LKR 500 Transport</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="form-grid grid-2 gap-15 mb-15">
+                                <div class="input-group">
+                                    <label for="booking-date" style="font-weight: 500; display: block; margin-bottom: 5px;">Date *</label>
+                                    <input type="date" id="booking-date" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                                </div>
+                                <div class="input-group">
+                                    <label for="booking-time" style="font-weight: 500; display: block; margin-bottom: 5px;">Time Slot *</label>
+                                    <input type="time" id="booking-time" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;" value="10:00">
+                                </div>
+                            </div>
+
+                            <div class="input-group mb-20">
+                                <label for="booking-notes" style="font-weight: 500; display: block; margin-bottom: 5px;">Additional Symptoms / Notes</label>
+                                <textarea id="booking-notes" placeholder="Describe symptoms or specific vaccine needed..." rows="3" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-full" style="padding: 11px; font-weight: 600; font-size: 1rem;">
+                                Confirm & Submit Booking Request
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Summary Card -->
+                    <div class="card" id="booking-summary-card">
+                        <h3 class="mb-15 flex items-center gap-8">
+                            <i data-lucide="receipt" class="text-primary"></i> Appointment Summary
+                        </h3>
+                        <div id="booking-summary" class="text-sm" style="line-height: 1.6;">
+                            <p class="text-muted mb-10">Select your pet and preferred vet to calculate estimate.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth()) return;
+            if (!VetLink.requireRole('pet_owner')) return;
+
+            lucide.createIcons();
+
+            const currentUser = VetLink.getCurrentUser();
+            const currentUserId = currentUser.user_id || currentUser.id;
+            
+            // Populate Pets Dropdown
+            const allPets = VetLink.getPets() || [];
+            let userPets = allPets.filter(p => p.owner_id === currentUserId || p.ownerId === currentUserId);
+            if (userPets.length === 0) userPets = allPets; // demo fallback
+
+            const petSelect = document.getElementById('booking-pet');
+            const targetPetId = VetLink.getParam('petId');
+
+            userPets.forEach(p => {
+                const pId = p.pet_id || p.id;
+                const opt = document.createElement('option');
+                opt.value = pId;
+                opt.textContent = `${p.name} (${p.species || p.type} - ${pId})`;
+                if (pId === targetPetId) opt.selected = true;
+                petSelect.appendChild(opt);
+            });
+
+            // Populate Vets Dropdown
+            const vets = VetLink.getVets();
+            const vetSelect = document.getElementById('booking-vet');
+            const targetVetId = VetLink.getParam('vetId') || localStorage.getItem('selectedVet');
+
+            vets.forEach(v => {
+                const vId = v.user_id || v.id;
+                const opt = document.createElement('option');
+                opt.value = vId;
+                opt.textContent = `${v.name} (${v.specialization || v.specialty || 'General'}) - ${v.clinic || 'Clinic'} [${v.location}]`;
+                if (vId === targetVetId) opt.selected = true;
+                vetSelect.appendChild(opt);
+            });
+
+            // Set minimum date to today
+            const dateInput = document.getElementById('booking-date');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+            dateInput.value = today;
+
+            // Real-time Summary
+            function updateSummary() {
+                const selectedPet = userPets.find(p => (p.pet_id || p.id) === petSelect.value);
+                const selectedVet = vets.find(v => (v.user_id || v.id) === vetSelect.value);
+                const serviceVal = document.getElementById('booking-service').value || 'Consultation';
+                const visitType = document.querySelector('input[name="visitType"]:checked')?.value || 'Clinic Visit';
+                const date = dateInput.value || today;
+                const time = document.getElementById('booking-time').value || '10:00';
+
+                let baseCost = 2000;
+                if (visitType === 'Home Visit') baseCost += 500;
+
+                const summaryDiv = document.getElementById('booking-summary');
+                summaryDiv.innerHTML = `
+                    <div style="background: #f8fafc; border-radius: 8px; padding: 12px; margin-bottom: 15px;">
+                        <div style="margin-bottom: 6px;"><strong>Patient:</strong> ${selectedPet ? `${selectedPet.name} (${selectedPet.species})` : '<span class="text-muted">Not chosen</span>'}</div>
+                        <div style="margin-bottom: 6px;"><strong>Veterinarian:</strong> ${selectedVet ? selectedVet.name : '<span class="text-muted">Not chosen</span>'}</div>
+                        <div style="margin-bottom: 6px;"><strong>Specialization:</strong> ${selectedVet ? (selectedVet.specialization || selectedVet.specialty) : '-'}</div>
+                        <div style="margin-bottom: 6px;"><strong>Service:</strong> ${serviceVal}</div>
+                        <div style="margin-bottom: 6px;"><strong>Visit Type:</strong> ${visitType}</div>
+                        <div><strong>Schedule:</strong> ${date} at ${time}</div>
+                    </div>
+                    <div class="flex items-center" style="justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+                        <span style="font-size: 1rem; font-weight: 600;">Estimated Fee:</span>
+                        <span style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">LKR ${baseCost.toLocaleString()}</span>
+                    </div>
+                `;
+            }
+
+            document.querySelectorAll('#book-vet-form select, #book-vet-form input').forEach(el => {
+                el.addEventListener('change', updateSummary);
+            });
+            updateSummary();
+
+            // Submit booking
+            document.getElementById('book-vet-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const petId = petSelect.value;
+                const vetId = vetSelect.value;
+                const service = document.getElementById('booking-service').value;
+                const visitType = document.querySelector('input[name="visitType"]:checked').value;
+                const date = dateInput.value;
+                const time = document.getElementById('booking-time').value;
+                const notes = document.getElementById('booking-notes').value.trim();
+
+                const selectedPet = userPets.find(p => (p.pet_id || p.id) === petId);
+                const selectedVet = vets.find(v => (v.user_id || v.id) === vetId);
+
+                const newBooking = {
+                    id: 'BK-' + Date.now(),
+                    petId: petId,
+                    petName: selectedPet ? selectedPet.name : 'Pet',
+                    species: selectedPet ? selectedPet.species : 'Pet',
+                    ownerId: currentUserId,
+                    ownerName: currentUser.name || currentUser.fullName || 'Pet Owner',
+                    vetId: vetId,
+                    vetName: selectedVet ? selectedVet.name : 'Veterinarian',
+                    service: service,
+                    type: service,
+                    visitType: visitType,
+                    date: date,
+                    time: time,
+                    notes: notes,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                };
+
+                const bookings = VetLink.getBookings() || [];
+                bookings.push(newBooking);
+                VetLink.saveBookings(bookings);
+
+                localStorage.removeItem('selectedVet');
+                showToast('Appointment request sent to veterinarian!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

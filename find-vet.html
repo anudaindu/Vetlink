@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Vet - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="my-pets.html" class="nav-item">
+                    <i data-lucide="dog"></i><span>My Pets</span>
+                </a>
+                <a href="register-pet.html" class="nav-item">
+                    <i data-lucide="plus-circle"></i><span>Register Pet</span>
+                </a>
+                <a href="find-vet.html" class="nav-item active">
+                    <i data-lucide="search"></i><span>Find Vet</span>
+                </a>
+                <a href="book-vet.html" class="nav-item">
+                    <i data-lucide="calendar-plus"></i><span>Book Vet</span>
+                </a>
+                <a href="account.html" class="nav-item">
+                    <i data-lucide="user"></i><span>Account</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">User</span>
+                        <div class="avatar-sm" id="user-avatar-display">U</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content fade-in">
+
+                <div class="mb-20">
+                    <h1 style="margin: 0 0 5px;">Find a Veterinarian</h1>
+                    <p class="text-muted" style="margin: 0;">Entity: vet_profiles (Specialization, License Number, Verified Status, Ratings)</p>
+                </div>
+
+                <!-- Filters Card with Search & Dropdowns -->
+                <div class="card mb-25">
+                    <div class="grid-3 gap-15">
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label for="vet-search" style="font-weight: 500; font-size: 0.85rem; color: #64748b; margin-bottom: 4px; display: block;">Search Veterinarian</label>
+                            <input type="text" id="vet-search" placeholder="Search by name, clinic, license..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label for="filter-specialization" style="font-weight: 500; font-size: 0.85rem; color: #64748b; margin-bottom: 4px; display: block;">Specialization (Dropdown)</label>
+                            <select id="filter-specialization" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white;">
+                                <option value="">All Specializations</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group" style="margin-bottom: 0;">
+                            <label for="filter-location" style="font-weight: 500; font-size: 0.85rem; color: #64748b; margin-bottom: 4px; display: block;">Location / City (Dropdown)</label>
+                            <select id="filter-location" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white;">
+                                <option value="">All Locations</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2 gap-20 mb-30" id="vet-results">
+                    <!-- JS populates -->
+                </div>
+
+                <div class="mb-20" id="previous-vets-container" style="display:none;">
+                    <h3 class="mb-15">Your Previous Veterinarians</h3>
+                    <div class="flex gap-10" id="previous-vets" style="flex-wrap:wrap;">
+                        <!-- JS populates -->
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth()) return;
+            if (!VetLink.requireRole('pet_owner')) return;
+
+            lucide.createIcons();
+
+            // Populate Specialization Dropdown
+            const specFilter = document.getElementById('filter-specialization');
+            VetLink.populateDropdown(specFilter, VetLink.specializations, '', 'All Specializations (Dropdown)');
+
+            // Populate Location Dropdown
+            const locFilter = document.getElementById('filter-location');
+            VetLink.populateDropdown(locFilter, VetLink.cities, '', 'All Locations (Dropdown)');
+
+            const resultsGrid = document.getElementById('vet-results');
+            const searchInput = document.getElementById('vet-search');
+
+            function getFilteredVets() {
+                const term = (searchInput.value || '').trim().toLowerCase();
+                const selectedSpec = (specFilter.value || '').trim();
+                const selectedLoc = (locFilter.value || '').trim();
+                const allVets = VetLink.getVets();
+
+                return allVets.filter(v => {
+                    const name = (v.name || v.fullName || '').toLowerCase();
+                    const clinic = (v.clinic || '').toLowerCase();
+                    const loc = (v.location || '').toLowerCase();
+                    const license = (v.license_number || v.licenseNumber || '').toLowerCase();
+                    const spec = (v.specialization || v.specialty || '');
+
+                    const matchesTerm = !term || name.includes(term) || clinic.includes(term) || loc.includes(term) || license.includes(term);
+                    const matchesSpec = !selectedSpec || spec.toLowerCase() === selectedSpec.toLowerCase();
+                    const matchesLoc = !selectedLoc || loc.toLowerCase() === selectedLoc.toLowerCase();
+
+                    return matchesTerm && matchesSpec && matchesLoc;
+                });
+            }
+
+            function renderVets() {
+                const vetList = getFilteredVets();
+
+                if (vetList.length === 0) {
+                    resultsGrid.innerHTML = `
+                        <div class="card col-span-full text-center py-40 text-muted">
+                            <i data-lucide="search-x" style="width: 40px; height: 40px; margin: 0 auto 10px; color: #94a3b8;"></i>
+                            <p style="margin:0;">No veterinarians found matching your filter criteria.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+                
+                let html = '';
+                vetList.forEach(vet => {
+                    const vetId = vet.user_id || vet.id;
+                    const rating = vet.ratings || vet.rating || 4.8;
+                    const license = vet.license_number || vet.licenseNumber || 'SLVC-VERIFIED';
+                    const spec = vet.specialization || vet.specialty || 'General Practice';
+                    const loc = vet.location || 'Colombo';
+
+                    html += `
+                        <div class="card feature-card flex items-start gap-15" style="text-align:left; justify-content: space-between;">
+                            <div class="avatar-sm" style="width:56px;height:56px;border-radius:50%;background:#eff6ff;color:var(--primary-color);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i data-lucide="stethoscope" style="width: 28px; height: 28px;"></i>
+                            </div>
+                            
+                            <div style="flex:1;">
+                                <div class="flex items-center gap-8 mb-5" style="justify-content: space-between;">
+                                    <h3 style="margin: 0; font-size: 1.15rem;">${vet.name}</h3>
+                                    <span class="status-badge" style="background: #fef3c7; color: #92400e; font-size: 0.75rem;">★ ${rating}</span>
+                                </div>
+                                
+                                <p class="text-sm text-muted" style="margin: 0 0 6px;">
+                                    <strong>${vet.clinic || 'Companion Clinic'}</strong> &bull; ${loc}
+                                </p>
+                                
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+                                    <span class="status-badge" style="background: #e0e7ff; color: #3730a3; font-size: 0.75rem;">
+                                        ${spec}
+                                    </span>
+                                    <span class="status-badge" style="background: #dcfce7; color: #166534; font-size: 0.75rem;">
+                                        ${license}
+                                    </span>
+                                </div>
+                                
+                                <button class="btn btn-primary btn-sm flex items-center gap-5" onclick="bookVet('${vetId}')">
+                                    <i data-lucide="calendar" style="width: 14px; height: 14px;"></i> Book Appointment
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                resultsGrid.innerHTML = html;
+                lucide.createIcons();
+            }
+
+            renderVets();
+
+            searchInput.addEventListener('input', renderVets);
+            specFilter.addEventListener('change', renderVets);
+            locFilter.addEventListener('change', renderVets);
+
+            window.bookVet = function(vetId) {
+                localStorage.setItem('selectedVet', vetId);
+                window.location.href = `book-vet.html?vetId=${vetId}`;
+            };
+
+            // Previous Vets Logic
+            const currentUser = VetLink.getCurrentUser();
+            const bookings = VetLink.getBookings() || [];
+            const userBookings = bookings.filter(b => b.ownerId === (currentUser.user_id || currentUser.id));
+            const prevVetsMap = {};
+            userBookings.forEach(b => {
+                if (b.vetId) prevVetsMap[b.vetId] = b.vetName || 'Veterinarian';
+            });
+            
+            const prevVetsKeys = Object.keys(prevVetsMap);
+            if (prevVetsKeys.length > 0) {
+                document.getElementById('previous-vets-container').style.display = 'block';
+                const prevEl = document.getElementById('previous-vets');
+                let prevHtml = '';
+                prevVetsKeys.forEach(vId => {
+                    prevHtml += `
+                        <button class="btn btn-outline btn-sm" onclick="bookVet('${vId}')">
+                            <i data-lucide="repeat" style="width: 12px; height: 12px; margin-right: 4px;"></i> Re-book ${prevVetsMap[vId]}
+                        </button>
+                    `;
+                });
+                prevEl.innerHTML = prevHtml;
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

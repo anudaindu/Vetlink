@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetLink - Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-primary-light">
+    <nav class="navbar">
+        <div class="container flex items-center" style="justify-content: space-between;">
+            <div class="logo-container">
+                <a href="index.html" class="flex items-center gap-10" style="text-decoration: none; color: inherit;">
+                    <img src="assets/logo.png" alt="VetLink Logo" style="height: 40px;">
+                    <span style="font-weight: 700; font-size: 1.25rem;">VetLink</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="login.html">Login</a>
+                <a href="register.html" class="btn btn-primary btn-sm active">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-container py-40 flex justify-center items-center" style="min-height: calc(100vh - 70px);">
+        <div class="auth-card-container fade-in" style="width: 100%; max-width: 560px;">
+            <div class="card p-40">
+                <div class="text-center mb-25">
+                    <img src="assets/logo.png" alt="VetLink Logo" style="height: 44px; margin-bottom: 0.75rem;">
+                    <h2 style="margin: 0 0 6px;">Create Account</h2>
+                    <p class="text-muted" style="margin: 0;">Register your user profile on VetLink</p>
+                </div>
+                
+                <form id="register-form">
+                    <!-- User Role Dropdown -->
+                    <div class="input-group mb-15">
+                        <label for="user_role" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                            Account Role *
+                        </label>
+                        <select id="user_role" name="user_role" class="w-full" required style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background-color: white; font-size: 0.95rem;">
+                            <option value="pet_owner">🐾 Pet Owner (Pet Care & Health Records)</option>
+                            <option value="veterinarian">🩺 Veterinarian (Clinical Practice & Vaccinations)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-grid grid-2 gap-15 mb-15">
+                        <!-- Full Name (profiles.name) -->
+                        <div class="input-group">
+                            <label for="fullName" id="name-label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Full Name *</label>
+                            <input type="text" id="fullName" name="fullName" class="w-full" placeholder="John Doe" required style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        </div>
+                        
+                        <!-- Username (users.username - Alternate Key) -->
+                        <div class="input-group">
+                            <label for="username" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Username (AK) *</label>
+                            <input type="text" id="username" name="username" class="w-full" placeholder="e.g. jdoe99" required style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        </div>
+                    </div>
+
+                    <div class="form-grid grid-2 gap-15 mb-15">
+                        <!-- Email (users.email) -->
+                        <div class="input-group">
+                            <label for="email" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email *</label>
+                            <input type="email" id="email" name="email" class="w-full" placeholder="john@example.com" required style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        </div>
+                        
+                        <!-- Phone Number (pet_owner_profiles.phone_number / vet contact) -->
+                        <div class="input-group">
+                            <label for="phone" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" class="w-full" placeholder="07X XXX XXXX" required style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        </div>
+                    </div>
+
+                    <!-- Location Dropdown (pet_owner_profiles.location / vet location) -->
+                    <div class="input-group mb-15">
+                        <label for="location" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Location (City) *</label>
+                        <select id="location" name="location" class="w-full" required style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background-color: white;">
+                            <option value="">Select your city</option>
+                            <!-- Populated via JS -->
+                        </select>
+                    </div>
+
+                    <!-- Veterinarian Specific Fields (vet_profiles subtype) -->
+                    <div id="vet-specific-fields" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 12px; color: var(--primary-color); display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                            Veterinarian Practice Details
+                        </h4>
+                        
+                        <div class="form-grid grid-2 gap-15 mb-12">
+                            <div class="input-group">
+                                <label for="license_number" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">SLVC License Number *</label>
+                                <input type="text" id="license_number" name="license_number" placeholder="e.g. SLVC-4401" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label for="specialization" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Specialization *</label>
+                                <select id="specialization" name="specialization" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; background-color: white;">
+                                    <option value="">Select Specialization</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="clinic_name" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Clinic / Hospital Name</label>
+                            <input type="text" id="clinic_name" name="clinic_name" placeholder="e.g. Central Companion Animal Hospital" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        </div>
+                    </div>
+
+                    <div class="form-grid grid-2 gap-15 mb-25">
+                        <div class="input-group">
+                            <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password *</label>
+                            <input type="password" id="password" name="password" class="w-full" placeholder="At least 6 characters" required minlength="6" style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="confirmPassword" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Confirm Password *</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="w-full" placeholder="Confirm password" required minlength="6" style="padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 0.5rem;">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-full mb-20" style="justify-content: center; padding: 0.85rem; font-size: 1rem; font-weight: 600;">
+                        Create Account
+                    </button>
+                    
+                    <div class="text-center">
+                        <p class="text-sm">Already have an account? <a href="login.html" class="text-primary" style="font-weight: 600;">Sign In</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        lucide.createIcons();
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleSelect = document.getElementById('user_role');
+            const vetFields = document.getElementById('vet-specific-fields');
+            const nameLabel = document.getElementById('name-label');
+            const licenseInput = document.getElementById('license_number');
+            const specSelect = document.getElementById('specialization');
+            const locationSelect = document.getElementById('location');
+
+            // Populate Location Dropdown
+            if (VetLink && VetLink.cities) {
+                VetLink.populateDropdown(locationSelect, VetLink.cities, '', 'Select your city');
+            }
+
+            // Populate Specialization Dropdown
+            if (VetLink && VetLink.specializations) {
+                VetLink.populateDropdown(specSelect, VetLink.specializations, '', 'Select Specialization');
+            }
+
+            // Toggle fields based on User Role Dropdown
+            function updateRoleFields() {
+                const role = roleSelect.value;
+                if (role === 'veterinarian') {
+                    vetFields.style.display = 'block';
+                    nameLabel.textContent = 'Doctor Full Name *';
+                    licenseInput.required = true;
+                    specSelect.required = true;
+                } else {
+                    vetFields.style.display = 'none';
+                    nameLabel.textContent = 'Full Name *';
+                    licenseInput.required = false;
+                    specSelect.required = false;
+                }
+                lucide.createIcons();
+            }
+
+            roleSelect.addEventListener('change', updateRoleFields);
+            updateRoleFields();
+        });
+
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const role = document.getElementById('user_role').value;
+            const fullName = document.getElementById('fullName').value.trim();
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const email = document.getElementById('email').value.trim().toLowerCase();
+            const phone = document.getElementById('phone').value.trim();
+            const location = document.getElementById('location').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match.', 'error');
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(username)) {
+                showToast('Username must be 3-30 alphanumeric characters.', 'warning');
+                return;
+            }
+            
+            const users = VetLink.getUsers() || [];
+            
+            if (users.find(u => u.email === email)) {
+                showToast('Email is already registered.', 'error');
+                return;
+            }
+
+            if (users.find(u => (u.username || '').toLowerCase() === username)) {
+                showToast('Username is already taken. Please choose another.', 'warning');
+                return;
+            }
+            
+            const userId = 'USR-' + Math.floor(100000 + Math.random() * 900000);
+            const now = new Date().toISOString();
+
+            // Structure according to ER Diagram:
+            // users: user_id, user_role, username, password_hash, email, is_active, created_at
+            // profiles: name, pet_owner_profiles / vet_profiles
+            const newUser = {
+                user_id: userId,
+                id: userId,
+                user_role: role,
+                role: role,
+                username: username,
+                password_hash: password,
+                password: password,
+                email: email,
+                is_active: true,
+                created_at: now,
+                registeredAt: now,
+                // Profile attributes
+                name: fullName,
+                fullName: fullName,
+                phone_number: phone,
+                phone: phone,
+                location: location
+            };
+
+            if (role === 'veterinarian') {
+                newUser.license_number = document.getElementById('license_number').value.trim();
+                newUser.licenseNumber = newUser.license_number;
+                newUser.specialization = document.getElementById('specialization').value;
+                newUser.specialty = newUser.specialization;
+                newUser.clinic = document.getElementById('clinic_name').value.trim() || 'Companion Animal Clinic';
+                newUser.is_verified = true;
+                newUser.ratings = 5.0;
+                newUser.rating = 5.0;
+            }
+            
+            users.push(newUser);
+            VetLink.saveUsers(users);
+            localStorage.setItem('currentUser', JSON.stringify(newUser));
+            
+            showToast('Account created successfully! Welcome to VetLink.', 'success');
+            
+            setTimeout(() => {
+                if (role === 'veterinarian') {
+                    window.location.href = 'vet-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

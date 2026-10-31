@@ -1,9 +1,20 @@
 const mongoose = require('mongoose');
 
+// ER Diagram Entity: profiles -> vet_profiles
+// Attributes: name, license number, specialization, is_verified, ratings
+// Relationship: update_by 0..m vaccination_records
 const vetSchema = new mongoose.Schema({
-  fullName: {
+  name: {
     type: String,
     required: true
+  },
+  fullName: {
+    type: String
+  },
+  username: {
+    type: String,
+    unique: true,
+    sparse: true
   },
   email: {
     type: String,
@@ -13,6 +24,9 @@ const vetSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: true
+  },
+  phoneNumber: {
+    type: String
   },
   clinic: {
     type: String,
@@ -30,27 +44,42 @@ const vetSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  specialty: {
+  specialization: {
     type: String,
     required: true
   },
+  specialty: {
+    type: String
+  },
+  isVerified: {
+    type: Boolean,
+    default: true
+  },
+  approved: {
+    type: Boolean,
+    default: true
+  },
+  ratings: {
+    type: Number,
+    default: 5.0
+  },
   rating: {
     type: Number,
-    default: 0
+    default: 5.0
   },
   status: {
     type: String,
     enum: ['Active', 'Inactive'],
     default: 'Active'
   },
-  approved: {
-    type: Boolean,
-    default: false
-  },
   role: {
     type: String,
-    enum: ['vet'],
-    default: 'vet'
+    enum: ['veterinarian', 'vet'],
+    default: 'veterinarian'
+  },
+  userRole: {
+    type: String,
+    default: 'veterinarian'
   },
   // Availability settings
   acceptsHomeVisits: {
@@ -96,9 +125,16 @@ const vetSchema = new mongoose.Schema({
   }
 });
 
-// Update the updatedAt field on save
+// Sync aliases
 vetSchema.pre('save', function(next) {
   this.updatedAt = new Date();
+  if (this.name && !this.fullName) this.fullName = this.name;
+  if (this.fullName && !this.name) this.name = this.fullName;
+  if (this.specialization && !this.specialty) this.specialty = this.specialization;
+  if (this.specialty && !this.specialization) this.specialization = this.specialty;
+  if (this.ratings && !this.rating) this.rating = this.ratings;
+  if (this.rating && !this.ratings) this.ratings = this.rating;
+  if (this.isVerified !== undefined && this.approved === undefined) this.approved = this.isVerified;
   next();
 });
 

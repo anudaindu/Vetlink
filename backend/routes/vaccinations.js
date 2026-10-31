@@ -3,10 +3,11 @@ const router = express.Router();
 const Pet = require('../models/Pet');
 const { authMiddleware } = require('../middleware/auth');
 
-// Add vaccination record (vet only)
+// Add vaccination record (vet_profiles update_by vaccination_records)
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    if (req.user.role !== 'vet') {
+    const role = (req.user.role || '').toLowerCase();
+    if (role !== 'vet' && role !== 'veterinarian') {
       return res.status(403).json({
         status: 'error',
         message: 'Access denied. Veterinarian only.'
@@ -15,14 +16,19 @@ router.post('/', authMiddleware, async (req, res) => {
 
     const {
       petId,
+      usedVaccine,
       vaccineName,
+      date,
       dateGiven,
       nextDue,
       batchNumber,
       notes
     } = req.body;
 
-    const pet = await Pet.findById(petId);
+    const chosenVaccine = usedVaccine || vaccineName;
+    const chosenDate = date || dateGiven || new Date().toISOString().split('T')[0];
+
+    const pet = await Pet.findOne({ $or: [{ _id: petId }, { petId: petId }] });
     if (!pet) {
       return res.status(404).json({
         status: 'error',
@@ -31,18 +37,24 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 
     const vaccination = {
-      id: Date.now().toString(),
-      name: vaccineName,
-      date: dateGiven,
+      id: 'vax_' + Date.now().toString(),
+      usedVaccine: chosenVaccine,
+      name: chosenVaccine,
+      date: chosenDate,
       nextDue: nextDue,
-      status: 'verified',
+      status: 'Verified',
       batchNumber: batchNumber,
-      vetName: req.user.fullName,
-      clinicName: req.user.clinic,
+      updatedByVet: req.user.id || req.user._id,
+      vetName: req.user.name || req.user.fullName,
+      clinicName: req.user.clinic || 'Companion Animal Clinic',
       notes: notes,
       type: 'veterinarian-record'
     };
 
+    if (!pet.vaccinationRecords) pet.vaccinationRecords = [];
+    if (!pet.vaccinations) pet.vaccinations = [];
+
+    pet.vaccinationRecords.push(vaccination);
     pet.vaccinations.push(vaccination);
     await pet.save();
 

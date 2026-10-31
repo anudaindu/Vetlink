@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veterinarian Profile - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="vet-dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="vet-requests.html" class="nav-item">
+                    <i data-lucide="bell"></i><span>Incoming Requests</span>
+                </a>
+                <a href="vet-patients.html" class="nav-item">
+                    <i data-lucide="users"></i><span>My Patients</span>
+                </a>
+                <a href="vet-schedule.html" class="nav-item">
+                    <i data-lucide="calendar"></i><span>Schedule</span>
+                </a>
+                <a href="vet-settings.html" class="nav-item">
+                    <i data-lucide="settings"></i><span>Settings</span>
+                </a>
+                <a href="vet-profile.html" class="nav-item active">
+                    <i data-lucide="user-cog"></i><span>Profile</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">Dr. Name</span>
+                        <div class="avatar-sm" id="user-avatar-display">D</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content fade-in">
+                <div class="mb-20">
+                    <h1 class="page-header" style="margin: 0 0 5px;">Veterinarian Profile</h1>
+                    <p class="text-muted" style="margin: 0;">Entities: users &bull; profiles &bull; vet_profiles (Specialization, License, Ratings)</p>
+                </div>
+                
+                <div class="card max-w-700">
+                    <!-- Profile View Card -->
+                    <div id="profile-view">
+                        <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:20px;">
+                            <div class="avatar-lg" style="width:84px; height:84px; border-radius:50%; background:var(--primary-color); color:white; display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:600; margin-bottom:12px;">
+                                <i data-lucide="stethoscope" style="width:40px; height:40px;"></i>
+                            </div>
+                            <h2 style="margin:0;" id="display-name">Dr. Name</h2>
+                            <p class="text-muted" id="display-email" style="margin: 4px 0 8px;">email@example.com</p>
+                            
+                            <div class="flex gap-10 items-center">
+                                <span class="status-badge" style="background:#dcfce7; color:#166534;" id="display-verified">
+                                    <i data-lucide="shield-check" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;"></i>
+                                    SLVC Verified Veterinarian
+                                </span>
+                                <span class="status-badge" style="background:#fef3c7; color:#92400e;" id="display-ratings">
+                                    ★ 4.9 Rating
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-list" style="margin-bottom:25px; font-size: 0.95rem;">
+                            <div style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+                                <span class="text-muted">Username (users.username):</span>
+                                <strong id="view-username">-</strong>
+                            </div>
+                            <div style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+                                <span class="text-muted">SLVC License Number (vet_profiles.license number):</span>
+                                <strong id="view-license" style="color: var(--primary-color);">-</strong>
+                            </div>
+                            <div style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+                                <span class="text-muted">Specialization (vet_profiles.specialization):</span>
+                                <strong id="view-specialization">-</strong>
+                            </div>
+                            <div style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+                                <span class="text-muted">Clinic / Hospital:</span>
+                                <strong id="view-clinic">-</strong>
+                            </div>
+                            <div style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between;">
+                                <span class="text-muted">Contact Number:</span>
+                                <strong id="view-phone">-</strong>
+                            </div>
+                            <div style="padding: 10px 0; display: flex; justify-content: space-between;">
+                                <span class="text-muted">Location (vet_profiles.location):</span>
+                                <strong id="view-location">-</strong>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-outline w-full flex items-center justify-center gap-5" id="btn-edit-profile">
+                            <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i> Edit Veterinarian Profile
+                        </button>
+                    </div>
+
+                    <!-- Edit Profile Form -->
+                    <form id="edit-form" style="display:none;">
+                        <h3 class="mb-20 flex items-center gap-8">
+                            <i data-lucide="user-check" class="text-primary"></i> Edit Profile Details
+                        </h3>
+
+                        <div class="input-group mb-15">
+                            <label for="edit-name" style="font-weight: 500; display: block; margin-bottom: 5px;">Doctor Full Name (profiles.name) *</label>
+                            <input type="text" id="edit-name" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+
+                        <div class="input-group mb-15">
+                            <label for="edit-username" style="font-weight: 500; display: block; margin-bottom: 5px;">Username (users.username [AK]) *</label>
+                            <input type="text" id="edit-username" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        </div>
+
+                        <div class="form-grid grid-2 gap-15 mb-15">
+                            <div class="input-group">
+                                <label for="edit-license" style="font-weight: 500; display: block; margin-bottom: 5px;">SLVC License Number *</label>
+                                <input type="text" id="edit-license" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            </div>
+                            <div class="input-group">
+                                <label for="edit-specialization" style="font-weight: 500; display: block; margin-bottom: 5px;">Specialization * (Dropdown)</label>
+                                <select id="edit-specialization" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white;">
+                                    <option value="">Select Specialization</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid grid-2 gap-15 mb-15">
+                            <div class="input-group">
+                                <label for="edit-clinic" style="font-weight: 500; display: block; margin-bottom: 5px;">Clinic Name</label>
+                                <input type="text" id="edit-clinic" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            </div>
+                            <div class="input-group">
+                                <label for="edit-phone" style="font-weight: 500; display: block; margin-bottom: 5px;">Contact Phone</label>
+                                <input type="tel" id="edit-phone" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-25">
+                            <label for="edit-location" style="font-weight: 500; display: block; margin-bottom: 5px;">Location (City Dropdown) *</label>
+                            <select id="edit-location" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; background-color: white;">
+                                <option value="">Select City</option>
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+
+                        <div class="flex gap-10">
+                            <button type="submit" class="btn btn-primary flex-1" style="flex:1;">Save Changes</button>
+                            <button type="button" class="btn btn-outline flex-1" style="flex:1;" id="btn-cancel-edit">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth()) return;
+            if (!VetLink.requireRole('veterinarian')) return;
+
+            lucide.createIcons();
+
+            // Populate Specialization Dropdown
+            const specSelect = document.getElementById('edit-specialization');
+            VetLink.populateDropdown(specSelect, VetLink.specializations, '', 'Select Specialization');
+
+            // Populate Location Dropdown
+            const locSelect = document.getElementById('edit-location');
+            VetLink.populateDropdown(locSelect, VetLink.cities, '', 'Select City');
+
+            function renderProfile() {
+                const user = VetLink.getCurrentUser();
+                const displayName = user.name || user.fullName || 'Veterinarian';
+                const formattedName = displayName.startsWith('Dr.') ? displayName : `Dr. ${displayName}`;
+
+                document.getElementById('display-name').textContent = formattedName;
+                document.getElementById('display-email').textContent = user.email || 'vet@vetlink.lk';
+                document.getElementById('view-username').textContent = '@' + (user.username || 'dr.vet');
+                document.getElementById('view-license').textContent = user.license_number || user.licenseNumber || 'SLVC-4401';
+                document.getElementById('view-specialization').textContent = user.specialization || user.specialty || 'General Practice';
+                document.getElementById('view-clinic').textContent = user.clinic || 'Pet Care Hospital';
+                document.getElementById('view-phone').textContent = user.phone_number || user.phone || '0112 555 123';
+                document.getElementById('view-location').textContent = user.location || 'Colombo';
+
+                const ratingVal = user.ratings || user.rating || 4.8;
+                document.getElementById('display-ratings').textContent = `★ ${ratingVal} Rating`;
+
+                lucide.createIcons();
+            }
+
+            renderProfile();
+
+            // Toggle Edit Mode
+            document.getElementById('btn-edit-profile').addEventListener('click', () => {
+                const user = VetLink.getCurrentUser();
+                document.getElementById('edit-name').value = user.name || user.fullName || '';
+                document.getElementById('edit-username').value = user.username || '';
+                document.getElementById('edit-license').value = user.license_number || user.licenseNumber || '';
+                document.getElementById('edit-specialization').value = user.specialization || user.specialty || '';
+                document.getElementById('edit-clinic').value = user.clinic || '';
+                document.getElementById('edit-phone').value = user.phone_number || user.phone || '';
+                document.getElementById('edit-location').value = user.location || VetLink.cities[0];
+                
+                document.getElementById('profile-view').style.display = 'none';
+                document.getElementById('edit-form').style.display = 'block';
+            });
+
+            document.getElementById('btn-cancel-edit').addEventListener('click', () => {
+                document.getElementById('profile-view').style.display = 'block';
+                document.getElementById('edit-form').style.display = 'none';
+            });
+
+            // Save Form
+            document.getElementById('edit-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const user = VetLink.getCurrentUser();
+                const users = VetLink.getUsers();
+                const userIdx = users.findIndex(u => (u.id === user.id || u.user_id === user.user_id || u.email === user.email));
+                
+                const updatedName = document.getElementById('edit-name').value.trim();
+                const updatedUsername = document.getElementById('edit-username').value.trim().toLowerCase();
+                const updatedLicense = document.getElementById('edit-license').value.trim();
+                const updatedSpec = document.getElementById('edit-specialization').value;
+                const updatedClinic = document.getElementById('edit-clinic').value.trim();
+                const updatedPhone = document.getElementById('edit-phone').value.trim();
+                const updatedLocation = document.getElementById('edit-location').value;
+
+                user.name = updatedName;
+                user.fullName = updatedName;
+                user.username = updatedUsername;
+                user.license_number = updatedLicense;
+                user.licenseNumber = updatedLicense;
+                user.specialization = updatedSpec;
+                user.specialty = updatedSpec;
+                user.clinic = updatedClinic;
+                user.phone_number = updatedPhone;
+                user.phone = updatedPhone;
+                user.location = updatedLocation;
+
+                if (userIdx !== -1) {
+                    users[userIdx] = { ...users[userIdx], ...user };
+                    VetLink.saveUsers(users);
+                }
+                localStorage.setItem('currentUser', JSON.stringify(user));
+
+                showToast('Veterinarian profile updated successfully!', 'success');
+                document.getElementById('profile-view').style.display = 'block';
+                document.getElementById('edit-form').style.display = 'none';
+                renderProfile();
+            });
+        });
+    </script>
+</body>
+</html>

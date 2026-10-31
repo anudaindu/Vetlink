@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Pet - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="my-pets.html" class="nav-item">
+                    <i data-lucide="dog"></i><span>My Pets</span>
+                </a>
+                <a href="register-pet.html" class="nav-item active">
+                    <i data-lucide="plus-circle"></i><span>Register Pet</span>
+                </a>
+                <a href="find-vet.html" class="nav-item">
+                    <i data-lucide="search"></i><span>Find Vet</span>
+                </a>
+                <a href="book-vet.html" class="nav-item">
+                    <i data-lucide="calendar-plus"></i><span>Book Vet</span>
+                </a>
+                <a href="account.html" class="nav-item">
+                    <i data-lucide="user"></i><span>Account</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">User</span>
+                        <div class="avatar-sm" id="user-avatar-display">U</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content fade-in">
+
+                <div class="mb-20">
+                    <h1 style="margin: 0 0 5px;">Register New Pet</h1>
+                    <p class="text-muted" style="margin: 0;">Add your pet's official digital profile & vaccination record</p>
+                </div>
+
+                <div class="card max-w-700">
+                    <form id="register-pet-form">
+                        <!-- Pet ID Display (PK) -->
+                        <div class="mb-20 p-15" style="background: #f1f5f9; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="font-size: 0.9rem; color: #475569;">Assigned Pet ID (PK):</strong>
+                                <div id="preview-pet-id" style="font-weight: 700; font-size: 1.15rem; color: var(--primary-color);">PET-XXXX</div>
+                            </div>
+                            <span class="status-badge" style="background: #e2e8f0; color: #334155;">Primary Key</span>
+                        </div>
+
+                        <div class="form-grid grid-2 gap-15 mb-20">
+                            <!-- Pet Name -->
+                            <div class="input-group">
+                                <label for="petName" style="font-weight: 500; display: block; margin-bottom: 6px;">Pet Name *</label>
+                                <input type="text" id="petName" name="petName" placeholder="e.g. Max" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <!-- Species (Dropdown) -->
+                            <div class="input-group">
+                                <label for="petSpecies" style="font-weight: 500; display: block; margin-bottom: 6px;">Species * (Dropdown)</label>
+                                <select id="petSpecies" name="petSpecies" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; background-color: white;">
+                                    <option value="">Select Species</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+
+                            <!-- Breed (Dynamic Dropdown based on Species) -->
+                            <div class="input-group">
+                                <label for="petBreed" style="font-weight: 500; display: block; margin-bottom: 6px;">Breed * (Dropdown)</label>
+                                <select id="petBreed" name="petBreed" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; background-color: white;">
+                                    <option value="">Select Species first</option>
+                                </select>
+                            </div>
+
+                            <!-- Custom Breed input if Other is selected -->
+                            <div class="input-group" id="custom-breed-group" style="display: none;">
+                                <label for="customBreed" style="font-weight: 500; display: block; margin-bottom: 6px;">Specify Custom Breed</label>
+                                <input type="text" id="customBreed" placeholder="Enter breed name" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <!-- Gender (Dropdown) -->
+                            <div class="input-group">
+                                <label for="petGender" style="font-weight: 500; display: block; margin-bottom: 6px;">Gender * (Dropdown)</label>
+                                <select id="petGender" name="petGender" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; background-color: white;">
+                                    <option value="">Select Gender</option>
+                                    <!-- Populated via JS -->
+                                </select>
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div class="input-group">
+                                <label for="petDob" style="font-weight: 500; display: block; margin-bottom: 6px;">Date of Birth (DOB) *</label>
+                                <input type="date" id="petDob" name="petDob" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <!-- Color -->
+                            <div class="input-group">
+                                <label for="petColor" style="font-weight: 500; display: block; margin-bottom: 6px;">Coat / Color</label>
+                                <input type="text" id="petColor" name="petColor" placeholder="e.g. Golden, Tricolor" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <!-- Microchip Number -->
+                            <div class="input-group">
+                                <label for="petMicrochip" style="font-weight: 500; display: block; margin-bottom: 6px;">Microchip Number (Optional)</label>
+                                <input type="text" id="petMicrochip" name="petMicrochip" placeholder="15-digit ISO microchip" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+                        </div>
+
+                        <div class="form-actions flex gap-10 mt-20">
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 600;">Register Pet</button>
+                            <a href="my-pets.html" class="btn btn-outline" style="padding: 10px 20px;">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth()) return;
+            if (!VetLink.requireRole('pet_owner')) return;
+
+            // Generate next Pet ID (PK)
+            const generatedPetId = 'PET-' + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('preview-pet-id').textContent = generatedPetId;
+
+            // Populate Species Dropdown
+            const speciesSelect = document.getElementById('petSpecies');
+            VetLink.populateDropdown(speciesSelect, VetLink.species, 'Dog', 'Select Species');
+
+            // Populate Gender Dropdown
+            const genderSelect = document.getElementById('petGender');
+            VetLink.populateDropdown(genderSelect, VetLink.genders, 'Male', 'Select Gender');
+
+            // Breed Dropdown handler
+            const breedSelect = document.getElementById('petBreed');
+            const customBreedGroup = document.getElementById('custom-breed-group');
+            const customBreedInput = document.getElementById('customBreed');
+
+            function updateBreeds() {
+                const currentSpecies = speciesSelect.value || 'Dog';
+                VetLink.populateBreeds(currentSpecies, breedSelect, '');
+                customBreedGroup.style.display = 'none';
+                customBreedInput.required = false;
+            }
+
+            speciesSelect.addEventListener('change', updateBreeds);
+            updateBreeds();
+
+            breedSelect.addEventListener('change', () => {
+                if (breedSelect.value === 'Other') {
+                    customBreedGroup.style.display = 'block';
+                    customBreedInput.required = true;
+                    customBreedInput.focus();
+                } else {
+                    customBreedGroup.style.display = 'none';
+                    customBreedInput.required = false;
+                }
+            });
+
+            // Form Submit
+            document.getElementById('register-pet-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const currentUser = VetLink.getCurrentUser();
+                
+                let selectedBreed = breedSelect.value;
+                if (selectedBreed === 'Other' && customBreedInput.value.trim()) {
+                    selectedBreed = customBreedInput.value.trim();
+                }
+
+                const speciesVal = speciesSelect.value;
+                const petName = document.getElementById('petName').value.trim();
+                const dobVal = document.getElementById('petDob').value;
+                const genderVal = genderSelect.value;
+                const colorVal = document.getElementById('petColor').value.trim();
+                const microchipVal = document.getElementById('petMicrochip').value.trim();
+
+                // ER Entity: pets
+                // Attributes: pet_id (pk), species, name, breed, date_of_birth, gender
+                const newPet = {
+                    pet_id: generatedPetId,
+                    id: generatedPetId,
+                    species: speciesVal,
+                    type: speciesVal,
+                    name: petName,
+                    breed: selectedBreed,
+                    date_of_birth: dobVal,
+                    dob: dobVal,
+                    gender: genderVal,
+                    color: colorVal,
+                    microchip: microchipVal,
+                    owner_id: currentUser.user_id || currentUser.id,
+                    ownerId: currentUser.user_id || currentUser.id,
+                    owner_name: currentUser.name || currentUser.fullName,
+                    owner: currentUser.name || currentUser.fullName,
+                    phone_number: currentUser.phone_number || currentUser.phone || '',
+                    phone: currentUser.phone_number || currentUser.phone || '',
+                    image: speciesVal === 'Cat' 
+                        ? 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=200&h=200'
+                        : 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=200&h=200',
+                    vaccination_records: [],
+                    vaccinations: [],
+                    reminders: []
+                };
+
+                const allPets = VetLink.getPets() || [];
+                allPets.push(newPet);
+                VetLink.savePets(allPets);
+
+                showToast(`Pet ${petName} registered successfully!`, 'success');
+                setTimeout(() => {
+                    window.location.href = 'my-pets.html';
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>

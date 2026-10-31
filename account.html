@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Owner Account - VetLink</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="assets/logo.png" alt="VetLink Logo" class="logo-img" style="height: 40px;">
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="dashboard.html" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+                </a>
+                <a href="my-pets.html" class="nav-item">
+                    <i data-lucide="dog"></i><span>My Pets</span>
+                </a>
+                <a href="register-pet.html" class="nav-item">
+                    <i data-lucide="plus-circle"></i><span>Register Pet</span>
+                </a>
+                <a href="find-vet.html" class="nav-item">
+                    <i data-lucide="search"></i><span>Find Vet</span>
+                </a>
+                <a href="book-vet.html" class="nav-item">
+                    <i data-lucide="calendar-plus"></i><span>Book Vet</span>
+                </a>
+                <a href="account.html" class="nav-item active">
+                    <i data-lucide="user"></i><span>Account</span>
+                </a>
+                <a href="#" class="nav-item text-danger" id="logout-btn">
+                    <i data-lucide="log-out"></i><span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+
+            <header class="dashboard-top-nav">
+                <div class="mobile-menu-toggle" id="mobile-menu-btn">
+                    <i data-lucide="menu"></i>
+                </div>
+                <div class="top-nav-right">
+                    <div class="user-info">
+                        <span id="user-name-display">User</span>
+                        <div class="avatar-sm" id="user-avatar-display">U</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content fade-in">
+
+                <div class="mb-20">
+                    <h1 style="margin: 0 0 5px;">My Account Profile</h1>
+                    <p class="text-muted" style="margin: 0;">Entities: users &bull; profiles &bull; pet_owner_profiles</p>
+                </div>
+                
+                <!-- Account Header Card -->
+                <div class="card mb-20 flex items-center gap-20" style="flex-wrap: wrap;">
+                    <div class="avatar-sm" id="acc-avatar" style="width:72px; height:72px; border-radius:50%; background:var(--primary-color); color:white; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:bold;">
+                        U
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="flex items-center gap-10">
+                            <h2 id="acc-name" style="margin:0;">User Name</h2>
+                            <span class="status-badge" id="acc-status-badge" style="background: #dcfce7; color: #166534;">Active</span>
+                            <span class="status-badge" style="background: #e0e7ff; color: #3730a3;">Pet Owner Profile</span>
+                        </div>
+                        <p class="text-muted" style="margin: 4px 0 0;">
+                            <span id="acc-username" style="font-weight: 600; color: #334155;">@username</span> &bull; 
+                            <span id="acc-email">user@email.com</span>
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="text-sm text-muted">User ID (PK):</span>
+                        <div id="acc-user-id" style="font-weight: 700; color: #475569;">USR-000</div>
+                    </div>
+                </div>
+
+                <div class="grid-2-1 gap-20">
+                    <!-- Profile Form (pet_owner_profiles + users) -->
+                    <div class="card">
+                        <h3 class="mb-15" style="display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="user-check" class="text-primary"></i> Edit Profile Details
+                        </h3>
+                        <form id="account-form">
+                            <!-- Full Name (profiles.name) -->
+                            <div class="input-group mb-15">
+                                <label for="fullName" style="font-weight: 500; display: block; margin-bottom: 6px;">Full Name (profiles.name) *</label>
+                                <input type="text" id="fullName" name="fullName" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <!-- Username (users.username - Alternate Key) -->
+                            <div class="input-group mb-15">
+                                <label for="username" style="font-weight: 500; display: block; margin-bottom: 6px;">Username (users.username [AK]) *</label>
+                                <input type="text" id="username" name="username" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <!-- Email (users.email) -->
+                            <div class="input-group mb-15">
+                                <label for="email" style="font-weight: 500; display: block; margin-bottom: 6px;">Email (users.email) *</label>
+                                <input type="email" id="email" name="email" required readonly style="width:100%; padding:9px; border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; color:#64748b;">
+                                <small class="text-muted">Primary account email</small>
+                            </div>
+
+                            <!-- Phone Number (pet_owner_profiles.phone_number) -->
+                            <div class="input-group mb-15">
+                                <label for="phone" style="font-weight: 500; display: block; margin-bottom: 6px;">Phone Number (pet_owner_profiles.phone_number) *</label>
+                                <input type="tel" id="phone" name="phone" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+
+                            <!-- Location Dropdown (pet_owner_profiles.location) -->
+                            <div class="input-group mb-20">
+                                <label for="location" style="font-weight: 500; display: block; margin-bottom: 6px;">Location (City Dropdown) *</label>
+                                <select id="location" name="location" required style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; background-color: white;">
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="padding: 10px 24px; font-weight: 600;">Save Changes</button>
+                        </form>
+                    </div>
+
+                    <!-- ER Relationship Overview: pet_owner_profiles has 1..m pets -->
+                    <div>
+                        <div class="card mb-20">
+                            <h3 class="mb-15" style="display: flex; align-items: center; gap: 8px;">
+                                <i data-lucide="dog" class="text-primary"></i> Registered Pets (1..m)
+                            </h3>
+                            <p class="text-muted text-sm mb-15">Pets currently linked to your pet owner profile:</p>
+                            <div id="acc-pets-list" class="activity-list">
+                                <!-- Populated via JS -->
+                            </div>
+                            <a href="register-pet.html" class="btn btn-outline btn-sm w-full mt-10" style="justify-content: center;">
+                                + Add Another Pet
+                            </a>
+                        </div>
+
+                        <div class="card" style="border: 1px solid #fee2e2; background-color: #fef2f2;">
+                            <h4 class="text-danger mb-10" style="margin-top:0;">Account Status</h4>
+                            <p class="text-muted text-sm mb-15">Created: <strong id="acc-created-at">-</strong></p>
+                            <button class="btn btn-outline btn-sm" style="border-color:#ef4444; color:#ef4444;" id="delete-account-btn">Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!VetLink.requireAuth()) return;
+            if (!VetLink.requireRole('pet_owner')) return;
+
+            const currentUser = VetLink.getCurrentUser();
+            const currentUserId = currentUser.user_id || currentUser.id;
+            
+            // Header Info
+            const displayName = currentUser.name || currentUser.fullName || 'User';
+            document.getElementById('acc-avatar').textContent = displayName.charAt(0).toUpperCase();
+            document.getElementById('acc-name').textContent = displayName;
+            document.getElementById('acc-username').textContent = '@' + (currentUser.username || 'user');
+            document.getElementById('acc-email').textContent = currentUser.email || 'user@example.com';
+            document.getElementById('acc-user-id').textContent = currentUserId || 'USR-101';
+            
+            const createdAtDate = currentUser.created_at || currentUser.registeredAt;
+            document.getElementById('acc-created-at').textContent = createdAtDate ? new Date(createdAtDate).toLocaleDateString() : 'Active Member';
+
+            // Populate Location Dropdown
+            const locSelect = document.getElementById('location');
+            if (VetLink.cities) {
+                VetLink.populateDropdown(locSelect, VetLink.cities, currentUser.location || 'Colombo', 'Select City');
+            }
+
+            // Fill Form Values
+            document.getElementById('fullName').value = displayName;
+            document.getElementById('username').value = currentUser.username || '';
+            document.getElementById('email').value = currentUser.email || '';
+            document.getElementById('phone').value = currentUser.phone_number || currentUser.phone || '';
+
+            // Populate Pets (1..m relationship)
+            const allPets = VetLink.getPets() || [];
+            const myPets = allPets.filter(p => p.owner_id === currentUserId || p.ownerId === currentUserId);
+            const petsListContainer = document.getElementById('acc-pets-list');
+
+            if (myPets.length === 0) {
+                petsListContainer.innerHTML = '<p class="text-muted text-sm py-10">No pets registered yet.</p>';
+            } else {
+                petsListContainer.innerHTML = myPets.map(p => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                        <div>
+                            <strong>${p.name}</strong> (${p.species || p.type})
+                            <div class="text-sm text-muted">${p.breed} &bull; ${p.gender || 'Pet'}</div>
+                        </div>
+                        <a href="pet-details.html?id=${p.pet_id || p.id}" class="text-sm text-primary" style="font-weight: 500;">View &rarr;</a>
+                    </div>
+                `).join('');
+            }
+
+            // Form Submit (Update profiles + users)
+            document.getElementById('account-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const newName = document.getElementById('fullName').value.trim();
+                const newUsername = document.getElementById('username').value.trim().toLowerCase();
+                const newPhone = document.getElementById('phone').value.trim();
+                const newLoc = locSelect.value;
+
+                currentUser.name = newName;
+                currentUser.fullName = newName;
+                currentUser.username = newUsername;
+                currentUser.phone_number = newPhone;
+                currentUser.phone = newPhone;
+                currentUser.location = newLoc;
+
+                const users = VetLink.getUsers() || [];
+                const idx = users.findIndex(u => (u.user_id === currentUserId || u.id === currentUserId || u.email === currentUser.email));
+                if (idx !== -1) {
+                    users[idx] = { ...users[idx], ...currentUser };
+                    VetLink.saveUsers(users);
+                }
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                showToast('Profile updated successfully!', 'success');
+                setTimeout(() => window.location.reload(), 800);
+            });
+
+            // Danger Zone Delete
+            document.getElementById('delete-account-btn').addEventListener('click', () => {
+                if (confirm('Are you sure you want to delete your account? All pet records will be unlinked.')) {
+                    const users = VetLink.getUsers().filter(u => u.id !== currentUserId && u.user_id !== currentUserId);
+                    VetLink.saveUsers(users);
+                    localStorage.removeItem('currentUser');
+                    window.location.href = 'index.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
