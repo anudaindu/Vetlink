@@ -1,0 +1,11 @@
+backend/.venv/**
+backend/src/**
+backend/.python-version
+backend/pyproject.toml
+backend/uv.lock
+**/__pycache__/
+*.py[cod]
+.DS_Store
+*.log
+.env
+*.bkp
