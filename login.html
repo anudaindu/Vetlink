@@ -63,52 +63,51 @@
 
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const identifier = document.getElementById('identifier').value.trim().toLowerCase();
-            const password = document.getElementById('password').value;
-            
-            if (typeof VetLink === 'undefined') {
-                showToast('System error. Please try again later.', 'error');
-                return;
-            }
+            const submitBtn = this.querySelector('button[type="submit"]');
 
-            const users = VetLink.getUsers() || [];
-            // Match against email OR username
-            let user = users.find(u => 
-                ((u.email && u.email.toLowerCase() === identifier) || 
-                 (u.username && u.username.toLowerCase() === identifier)) && 
-                (u.password === password || u.password_hash === password)
-            );
+            UIEngine.executeAsyncSafe(async () => {
+                const identifier = document.getElementById('identifier').value.trim().toLowerCase();
+                const password = document.getElementById('password').value;
 
-            // Also check mock vets if logging in as vet
-            if (!user && VetLink.mockVets) {
-                const mockVet = VetLink.mockVets.find(v => 
-                    (v.email.toLowerCase() === identifier || (v.username && v.username.toLowerCase() === identifier))
+                // Simulated micro-delay for 60fps tactile smoothness
+                await new Promise(r => setTimeout(r, 200));
+
+                const users = VetLink.getUsers() || [];
+                let user = users.find(u => 
+                    ((u.email && u.email.toLowerCase() === identifier) || 
+                     (u.username && u.username.toLowerCase() === identifier)) && 
+                    (u.password === password || u.password_hash === password)
                 );
-                if (mockVet && (password === 'password' || password === '123456' || password === 'admin')) {
-                    user = mockVet;
-                }
-            }
-            
-            if (user) {
-                // Ensure normalized properties
-                user.id = user.user_id || user.id;
-                user.role = VetLink.normalizeRole(user.user_role || user.role);
-                user.user_role = user.role;
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                
-                showToast('Signed in successfully!', 'success');
-                setTimeout(() => {
-                    if (user.role === 'veterinarian') {
-                        window.location.href = 'vet-dashboard.html';
-                    } else if (user.role === 'pet_owner') {
-                        window.location.href = 'dashboard.html';
-                    } else {
-                        window.location.href = 'role-selection.html';
+
+                if (!user && VetLink.mockVets) {
+                    const mockVet = VetLink.mockVets.find(v => 
+                        (v.email.toLowerCase() === identifier || (v.username && v.username.toLowerCase() === identifier))
+                    );
+                    if (mockVet && (password === 'password' || password === '123456' || password === 'admin')) {
+                        user = mockVet;
                     }
-                }, 800);
-            } else {
-                showToast('Invalid email/username or password. Please try again.', 'error');
-            }
+                }
+                
+                if (user) {
+                    user.id = user.user_id || user.id;
+                    user.role = VetLink.normalizeRole(user.user_role || user.role);
+                    user.user_role = user.role;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    showToast('Signed in successfully!', 'success');
+                    setTimeout(() => {
+                        if (user.role === 'veterinarian') {
+                            window.location.href = 'vet-dashboard.html';
+                        } else if (user.role === 'pet_owner') {
+                            window.location.href = 'dashboard.html';
+                        } else {
+                            window.location.href = 'role-selection.html';
+                        }
+                    }, 500);
+                } else {
+                    showToast('Invalid email/username or password. Please try again.', 'error');
+                }
+            }, { button: submitBtn, loadingText: 'Signing in...' });
         });
     </script>
 </body>

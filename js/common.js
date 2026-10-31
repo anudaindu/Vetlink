@@ -1,34 +1,266 @@
-// ===========================
-// VetLink — Common Utilities & Data Layer
-// ===========================
-// Shared across ALL pages: auth guard, nav, mobile menu, Lucide icons, helpers, ER models
+// ============================================================================
+// VetLink — Production UI Engine & State Management (60 FPS, Zero CLS, Anti-Glitch)
+// ============================================================================
 
 (function () {
     'use strict';
 
-    window.VetLink = window.VetLink || {};
+    // ==========================================
+    // 1. High Performance UI Engine
+    // ==========================================
+    const UIEngine = {
+        activeLocks: new WeakSet(),
+        lastClickTime: new WeakMap(),
+        SPAM_THRESHOLD_MS: 350,
 
-    // ---- Lookup Lists & Dropdowns (per ER Diagram) ----
+        /**
+         * Generic debouncer
+         */
+        debounce: function (fn, delayMs, immediate) {
+            delayMs = delayMs || 250;
+            let timeoutId = null;
+            return function () {
+                const context = this;
+                const args = arguments;
+                const callNow = immediate && !timeoutId;
+
+                if (timeoutId !== null) clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    timeoutId = null;
+                    if (!immediate) fn.apply(context, args);
+                }, delayMs);
+
+                if (callNow) fn.apply(context, args);
+            };
+        },
+
+        /**
+         * Generic throttler
+         */
+        throttle: function (fn, intervalMs) {
+            intervalMs = intervalMs || 100;
+            let lastExecution = 0;
+            let timerId = null;
+            return function () {
+                const context = this;
+                const args = arguments;
+                const now = Date.now();
+                const remaining = intervalMs - (now - lastExecution);
+
+                if (remaining <= 0) {
+                    if (timerId !== null) {
+                        clearTimeout(timerId);
+                        timerId = null;
+                    }
+                    lastExecution = now;
+                    fn.apply(context, args);
+                } else if (!timerId) {
+                    timerId = setTimeout(() => {
+                        lastExecution = Date.now();
+                        timerId = null;
+                        fn.apply(context, args);
+                    }, remaining);
+                }
+            };
+        },
+
+        /**
+         * Rapid-click spam shield
+         */
+        isClickSpam: function (element) {
+            if (!element) return false;
+            const now = performance.now();
+            const last = this.lastClickTime.get(element) || 0;
+            if (now - last < this.SPAM_THRESHOLD_MS) return true;
+            this.lastClickTime.set(element, now);
+            return false;
+        },
+
+        /**
+         * Lock element with dimension freeze (Zero Cumulative Layout Shift)
+         */
+        lockElement: function (element, loadingText) {
+            if (!element || this.activeLocks.has(element)) return;
+            this.activeLocks.add(element);
+
+            // Reserve exact bounding dimensions to avoid layout jumps
+            const rect = element.getBoundingClientRect();
+            if (rect.width > 0) element.style.minWidth = rect.width + 'px';
+            if (rect.height > 0) element.style.minHeight = rect.height + 'px';
+
+            element.setAttribute('aria-busy', 'true');
+            element.setAttribute('aria-disabled', 'true');
+            element.classList.add('is-loading');
+
+            if (element instanceof HTMLButtonElement || element instanceof HTMLInputElement) {
+                element.disabled = true;
+            }
+
+            element.dataset.originalContent = element.innerHTML;
+
+            if (loadingText) {
+                element.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label">${loadingText}</span>`;
+            } else {
+                element.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span><span class="btn-label" style="opacity:0.2;">${element.dataset.originalContent}</span>`;
+            }
+        },
+
+        /**
+         * Unlock element and restore dimensions
+         */
+        unlockElement: function (element) {
+            if (!element || !this.activeLocks.has(element)) return;
+            this.activeLocks.delete(element);
+
+            element.removeAttribute('aria-busy');
+            element.removeAttribute('aria-disabled');
+            element.classList.remove('is-loading');
+
+            if (element instanceof HTMLButtonElement || element instanceof HTMLInputElement) {
+                element.disabled = false;
+            }
+
+            if (element.dataset.originalContent !== undefined) {
+                element.innerHTML = element.dataset.originalContent;
+                delete element.dataset.originalContent;
+            }
+
+            element.style.minWidth = '';
+            element.style.minHeight = '';
+        },
+
+        /**
+         * Reliable Async Lifecycle (try...catch...finally)
+         */
+        executeAsyncSafe: async function (asyncFn, options) {
+            const btn = options ? options.button : null;
+
+            if (btn) {
+                if (this.isClickSpam(btn) || this.activeLocks.has(btn)) return null;
+                this.lockElement(btn, options ? options.loadingText : null);
+            }
+
+            try {
+                const result = await asyncFn();
+                if (options && options.onSuccess) options.onSuccess(result);
+                return result;
+            } catch (err) {
+                console.error('[UIEngine Error]', err);
+                if (options && options.onError) options.onError(err);
+                return null;
+            } finally {
+                if (btn) this.unlockElement(btn);
+                if (options && options.onFinally) options.onFinally();
+            }
+        },
+
+        /**
+         * Optimistic UI Updates with Snapshot-based Rollback
+         */
+        optimisticMutate: async function (options) {
+            const currentSnapshot = JSON.parse(JSON.stringify(options.getCurrent()));
+            try {
+                const optimisticState = options.mutate(currentSnapshot);
+                const commitResult = await Promise.resolve(options.commit(optimisticState));
+                if (commitResult === false) throw new Error('Commit rejected');
+                return true;
+            } catch (error) {
+                console.warn('[UIEngine Rollback]', error);
+                if (options.onRollback) options.onRollback(currentSnapshot);
+                if (window.showToast) {
+                    window.showToast(options.rollbackMessage || 'Action failed. Changes have been restored.', 'error');
+                }
+                return false;
+            }
+        },
+
+        /**
+         * Zero-CLS Skeleton Grid Generator
+         */
+        renderSkeletonGrid: function (container, count, template) {
+            if (!container) return;
+            count = count || 3;
+            template = template || 'pet-card';
+            let skeletonHtml = '';
+
+            for (let i = 0; i < count; i++) {
+                if (template === 'pet-card') {
+                    skeletonHtml += `
+                        <div class="card skeleton-card" style="min-height: 240px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <div class="skeleton-avatar skeleton-shimmer mx-auto mb-15"></div>
+                                <div class="skeleton-line skeleton-shimmer mb-10" style="width: 60%; margin: 0 auto 10px;"></div>
+                                <div class="skeleton-line skeleton-shimmer mb-15" style="width: 40%; margin: 0 auto 15px;"></div>
+                                <div class="skeleton-shimmer" style="height: 60px; border-radius: 8px;"></div>
+                            </div>
+                            <div class="skeleton-shimmer mt-15" style="height: 38px; border-radius: 8px;"></div>
+                        </div>
+                    `;
+                } else if (template === 'vet-card') {
+                    skeletonHtml += `
+                        <div class="card skeleton-card flex items-start gap-15" style="min-height: 140px;">
+                            <div class="skeleton-avatar skeleton-shimmer" style="width: 56px; height: 56px; flex-shrink: 0;"></div>
+                            <div style="flex: 1;">
+                                <div class="skeleton-line skeleton-shimmer mb-10" style="width: 50%;"></div>
+                                <div class="skeleton-line skeleton-shimmer mb-10" style="width: 70%;"></div>
+                                <div class="skeleton-line skeleton-shimmer" style="width: 30%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = skeletonHtml;
+        },
+
+        /**
+         * Global Double-Submit & Tactile Feedback Protection
+         */
+        initInteractionGuards: function () {
+            document.addEventListener('submit', (e) => {
+                const form = e.target;
+                if (!form || !(form instanceof HTMLFormElement)) return;
+                const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+                if (submitBtn && this.isClickSpam(submitBtn)) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }
+            }, true);
+
+            document.addEventListener('pointerdown', (e) => {
+                const target = e.target.closest('button, .btn, [role="button"]');
+                if (target && !target.hasAttribute('aria-disabled') && !target.classList.contains('is-loading')) {
+                    target.classList.add('is-pressed');
+                }
+            }, { passive: true });
+
+            const release = (e) => {
+                const target = e.target.closest('button, .btn, [role="button"]');
+                if (target) target.classList.remove('is-pressed');
+            };
+
+            document.addEventListener('pointerup', release, { passive: true });
+            document.addEventListener('pointercancel', release, { passive: true });
+        }
+    };
+
+    window.UIEngine = UIEngine;
+
+    // ==========================================
+    // 2. VetLink Application & ER Model Logic
+    // ==========================================
+    const VetLink = window.VetLink || {};
+
     VetLink.roles = [
         { value: 'pet_owner', label: 'Pet Owner' },
         { value: 'veterinarian', label: 'Veterinarian' }
     ];
 
     VetLink.species = [
-        'Dog',
-        'Cat',
-        'Bird',
-        'Rabbit',
-        'Horse',
-        'Reptile',
-        'Other'
+        'Dog', 'Cat', 'Bird', 'Rabbit', 'Horse', 'Reptile', 'Other'
     ];
 
     VetLink.genders = [
-        'Male',
-        'Female',
-        'Male (Neutered)',
-        'Female (Spayed)'
+        'Male', 'Female', 'Male (Neutered)', 'Female (Spayed)'
     ];
 
     VetLink.breedsBySpecies = {
@@ -88,22 +320,9 @@
     ];
 
     VetLink.cities = [
-        'Colombo',
-        'Kandy',
-        'Gampaha',
-        'Galle',
-        'Negombo',
-        'Jaffna',
-        'Matara',
-        'Kurunegala',
-        'Rajagiriya',
-        'Dehiwala',
-        'Battaramulla',
-        'Pannipitiya',
-        'Nuwara Eliya',
-        'Anuradhapura',
-        'Trincomalee',
-        'Ratnapura'
+        'Colombo', 'Kandy', 'Gampaha', 'Galle', 'Negombo', 'Jaffna',
+        'Matara', 'Kurunegala', 'Rajagiriya', 'Dehiwala', 'Battaramulla',
+        'Pannipitiya', 'Nuwara Eliya', 'Anuradhapura', 'Trincomalee', 'Ratnapura'
     ];
 
     // ---- Auth Helpers ----
@@ -115,14 +334,15 @@
 
     VetLink.isLoggedIn = function () {
         const user = VetLink.getCurrentUser();
-        return user && (user.id || user.user_id);
+        return Boolean(user && (user.id || user.user_id));
     };
 
     VetLink.normalizeRole = function (role) {
-        if (!role) return '';
-        if (role === 'pet-owner' || role === 'pet_owner') return 'pet_owner';
-        if (role === 'veterinarian' || role === 'vet') return 'veterinarian';
-        return role;
+        if (!role) return 'pet_owner';
+        const r = String(role).toLowerCase();
+        if (r === 'pet-owner' || r === 'pet_owner') return 'pet_owner';
+        if (r === 'veterinarian' || r === 'vet') return 'veterinarian';
+        return 'pet_owner';
     };
 
     VetLink.requireAuth = function (redirectTo) {
@@ -156,61 +376,29 @@
         }
     };
 
-    // ---- Data Helpers ----
+    // ---- Data Persistence Layer ----
     VetLink.getPets = function () {
         try {
             const raw = JSON.parse(localStorage.getItem('pets') || '[]');
-            // Normalize pets according to ER diagram
             return raw.map(p => ({
+                ...p,
                 id: p.pet_id || p.id,
                 pet_id: p.pet_id || p.id,
-                name: p.name || 'Unnamed Pet',
                 species: p.species || p.type || 'Dog',
                 type: p.species || p.type || 'Dog',
-                breed: p.breed || 'Mixed',
-                gender: p.gender || 'Male',
-                dob: p.date_of_birth || p.dob || '2022-01-01',
                 date_of_birth: p.date_of_birth || p.dob || '2022-01-01',
-                owner: p.owner || p.ownerName || 'Pet Owner',
-                ownerName: p.owner || p.ownerName || 'Pet Owner',
-                ownerId: p.ownerId || p.owner_id || '',
-                owner_id: p.ownerId || p.owner_id || '',
-                phone: p.phone || p.phone_number || '',
-                phone_number: p.phone || p.phone_number || '',
-                color: p.color || '',
-                microchip: p.microchip || '',
-                image: p.image || '',
+                dob: p.date_of_birth || p.dob || '2022-01-01',
+                gender: p.gender || 'Male',
                 vaccination_records: (p.vaccination_records || p.vaccinations || []).map(v => ({
-                    id: v.id || ('v_' + Date.now()),
-                    date: v.date || new Date().toISOString().split('T')[0],
-                    used_vaccine: v.used_vaccine || v.name || v.vaccine || 'General Vaccine',
-                    vaccine: v.used_vaccine || v.name || v.vaccine || 'General Vaccine',
-                    name: v.used_vaccine || v.name || v.vaccine || 'General Vaccine',
-                    vetName: v.vetName || v.veterinarian || v.vet || 'Dr. Nirmal Silva',
-                    veterinarian: v.vetName || v.veterinarian || v.vet || 'Dr. Nirmal Silva',
-                    clinicName: v.clinicName || 'VetLink Partner Clinic',
-                    status: v.status || 'Verified',
-                    nextDue: v.nextDue || ''
-                })),
-                vaccinations: (p.vaccination_records || p.vaccinations || []).map(v => ({
-                    id: v.id || ('v_' + Date.now()),
-                    date: v.date || new Date().toISOString().split('T')[0],
-                    used_vaccine: v.used_vaccine || v.name || v.vaccine || 'General Vaccine',
-                    vaccine: v.used_vaccine || v.name || v.vaccine || 'General Vaccine',
-                    name: v.used_vaccine || v.name || v.vaccine || 'General Vaccine',
-                    vetName: v.vetName || v.veterinarian || v.vet || 'Dr. Nirmal Silva',
-                    veterinarian: v.vetName || v.veterinarian || v.vet || 'Dr. Nirmal Silva',
-                    clinicName: v.clinicName || 'VetLink Partner Clinic',
-                    status: v.status || 'Verified',
-                    nextDue: v.nextDue || ''
-                })),
-                reminders: p.reminders || []
+                    ...v,
+                    used_vaccine: v.used_vaccine || v.vaccine || v.name || 'General Vaccine',
+                    status: v.status || 'Verified'
+                }))
             }));
         } catch { return []; }
     };
 
     VetLink.savePets = function (pets) {
-        // Ensure dual compatibility for both ER fields and legacy UI
         const normalized = pets.map(p => ({
             ...p,
             pet_id: p.pet_id || p.id,
@@ -248,10 +436,7 @@
                 fullName: u.fullName || u.name || 'User',
                 user_role: VetLink.normalizeRole(u.user_role || u.role),
                 role: VetLink.normalizeRole(u.user_role || u.role),
-                phone_number: u.phone_number || u.phone || '',
-                phone: u.phone_number || u.phone || '',
-                is_active: u.is_active !== undefined ? u.is_active : true,
-                created_at: u.created_at || u.registeredAt || new Date().toISOString()
+                is_active: u.is_active !== undefined ? u.is_active : true
             }));
         } catch { return []; }
     };
@@ -260,7 +445,7 @@
         localStorage.setItem('users', JSON.stringify(users));
     };
 
-    // ---- Mock Veterinarians (matching vet_profiles in ER Diagram) ----
+    // ---- Mock Vets matching ER Diagram ----
     VetLink.mockVets = [
         {
             user_id: 'vet1',
@@ -281,8 +466,6 @@
             is_verified: true,
             ratings: 4.8,
             rating: 4.8,
-            is_active: true,
-            created_at: '2023-01-15T09:00:00Z',
             status: 'Active'
         },
         {
@@ -304,8 +487,6 @@
             is_verified: true,
             ratings: 4.6,
             rating: 4.6,
-            is_active: true,
-            created_at: '2023-03-20T10:30:00Z',
             status: 'Active'
         },
         {
@@ -327,8 +508,6 @@
             is_verified: true,
             ratings: 4.5,
             rating: 4.5,
-            is_active: true,
-            created_at: '2023-06-11T14:15:00Z',
             status: 'Active'
         },
         {
@@ -350,8 +529,6 @@
             is_verified: true,
             ratings: 4.9,
             rating: 4.9,
-            is_active: true,
-            created_at: '2023-08-05T08:45:00Z',
             status: 'Active'
         }
     ];
@@ -359,9 +536,8 @@
     VetLink.getVets = function () {
         const users = VetLink.getUsers();
         const vetUsers = users.filter(u => VetLink.normalizeRole(u.user_role || u.role) === 'veterinarian');
-        
-        // Merge mock vets with registered vet users
         const allVets = [...VetLink.mockVets];
+
         vetUsers.forEach(vu => {
             if (!allVets.some(v => v.id === vu.id || v.email === vu.email)) {
                 allVets.push({
@@ -380,15 +556,16 @@
                     specialty: vu.specialization || vu.specialty || 'General Practice',
                     is_verified: vu.is_verified !== undefined ? vu.is_verified : true,
                     ratings: vu.ratings || 5.0,
-                    rating: vu.ratings || 5.0,
-                    status: 'Active'
+                    status: 'Active',
+                    user_role: 'veterinarian',
+                    role: 'veterinarian'
                 });
             }
         });
         return allVets;
     };
 
-    // ---- Mock Pets (matching pets entity in ER Diagram) ----
+    // ---- Mock Pets matching ER Diagram ----
     VetLink.mockPets = [
         {
             pet_id: 'PET-101',
@@ -402,9 +579,8 @@
             gender: 'Male',
             owner: 'Anuda H',
             ownerName: 'Anuda H',
-            ownerId: '',
             owner_id: '',
-            phone: '077 123 4567',
+            ownerId: '',
             phone_number: '077 123 4567',
             color: 'Golden',
             microchip: '985112345678901',
@@ -412,14 +588,6 @@
             vaccination_records: [
                 { id: '1', date: '2023-10-10', used_vaccine: 'Rabies Vaccine', nextDue: '2024-10-10', status: 'Verified', vetName: 'Dr. Nirmal Silva', clinicName: 'Pet Care Vets Colombo' },
                 { id: '2', date: '2023-08-15', used_vaccine: 'DHPP / 5-in-1 (Distemper, Hepatitis, Parvo, Parainfluenza)', nextDue: '2024-08-15', status: 'Verified', vetName: 'Dr. Nirmal Silva', clinicName: 'Pet Care Vets Colombo' }
-            ],
-            vaccinations: [
-                { id: '1', date: '2023-10-10', used_vaccine: 'Rabies Vaccine', vaccine: 'Rabies Vaccine', name: 'Rabies Vaccine', nextDue: '2024-10-10', status: 'Verified', vetName: 'Dr. Nirmal Silva', clinicName: 'Pet Care Vets Colombo' },
-                { id: '2', date: '2023-08-15', used_vaccine: 'DHPP / 5-in-1 (Distemper, Hepatitis, Parvo, Parainfluenza)', vaccine: 'DHPP', name: 'DHPP', nextDue: '2024-08-15', status: 'Verified', vetName: 'Dr. Nirmal Silva', clinicName: 'Pet Care Vets Colombo' }
-            ],
-            reminders: [
-                { id: '1', title: 'Rabies Booster', date: '2024-10-10', type: 'Vaccination' },
-                { id: '2', title: 'Flea Treatment', date: '2024-04-20', type: 'Medicine' }
             ]
         },
         {
@@ -434,33 +602,24 @@
             gender: 'Female',
             owner: 'Anuda H',
             ownerName: 'Anuda H',
-            ownerId: '',
             owner_id: '',
-            phone: '0771234567',
+            ownerId: '',
             phone_number: '0771234567',
             color: 'White',
             microchip: '985112345678902',
             image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=200&h=200',
             vaccination_records: [
                 { id: 'v4', date: '2023-11-05', used_vaccine: 'FVRCP (Feline Viral Rhinotracheitis, Calici, Panleukopenia)', nextDue: '2024-11-05', status: 'Verified', vetName: 'Dr. Anjali Rose', clinicName: 'Vets for Pets - Rajagiriya' }
-            ],
-            vaccinations: [
-                { id: 'v4', date: '2023-11-05', used_vaccine: 'FVRCP (Feline Viral Rhinotracheitis, Calici, Panleukopenia)', vaccine: 'FVRCP', name: 'FVRCP', nextDue: '2024-11-05', status: 'Verified', vetName: 'Dr. Anjali Rose', clinicName: 'Vets for Pets - Rajagiriya' }
-            ],
-            reminders: [
-                { id: 'r3', title: 'Flea Treatment', date: '2024-04-25', type: 'Medication' }
             ]
         }
     ];
 
-    // Initialize mock data
     VetLink.initMockData = function () {
         if (!localStorage.getItem('pets') || VetLink.getPets().length === 0) {
             VetLink.savePets(VetLink.mockPets);
         }
     };
 
-    // ---- Age Calculator ----
     VetLink.calculateAge = function (dob) {
         if (!dob) return 'N/A';
         const birth = new Date(dob);
@@ -470,20 +629,18 @@
         const m = today.getMonth() - birth.getMonth();
         if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) years--;
         if (years < 1) {
-            let months = (today.getFullYear() - birth.getFullYear()) * 12 + today.getMonth() - birth.getMonth();
+            const months = (today.getFullYear() - birth.getFullYear()) * 12 + today.getMonth() - birth.getMonth();
             if (months <= 0) return 'Under 1 month';
             return months + (months === 1 ? ' month' : ' months');
         }
         return years + (years === 1 ? ' year' : ' years');
     };
 
-    // ---- URL Param Helpers ----
     VetLink.getParam = function (name) {
         const params = new URLSearchParams(window.location.search);
         return params.get(name);
     };
 
-    // ---- Dropdown Population Helpers ----
     VetLink.populateDropdown = function (selectEl, options, selectedValue, placeholder) {
         if (!selectEl) return;
         selectEl.innerHTML = '';
@@ -514,14 +671,13 @@
         VetLink.populateDropdown(breedSelectEl, breeds, selectedBreed, 'Select Breed');
     };
 
-    // ---- Vaccination Record Helper ----
     VetLink.addVaccinationRecord = function (petId, record) {
         const pets = VetLink.getPets();
         const petIdx = pets.findIndex(p => p.id === petId || p.pet_id === petId);
-        if (petIdx === -1) return false;
+        if (petIdx === -1) return null;
 
         const newRecord = {
-            id: 'vax_' + Date.now(),
+            id: record.id || ('vax_' + Date.now()),
             date: record.date || new Date().toISOString().split('T')[0],
             used_vaccine: record.used_vaccine || record.vaccine || 'General Vaccine',
             vaccine: record.used_vaccine || record.vaccine || 'General Vaccine',
@@ -534,21 +690,23 @@
         };
 
         if (!pets[petIdx].vaccination_records) pets[petIdx].vaccination_records = [];
-        if (!pets[petIdx].vaccinations) pets[petIdx].vaccinations = [];
-
         pets[petIdx].vaccination_records.push(newRecord);
-        pets[petIdx].vaccinations.push(newRecord);
 
         VetLink.savePets(pets);
         return newRecord;
     };
 
-    // ---- DOM Ready + Init ----
+    window.VetLink = VetLink;
+
+    // ---- DOM Lifecycle Initialization ----
     document.addEventListener('DOMContentLoaded', function () {
+        UIEngine.initInteractionGuards();
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
 
+        // Mobile Nav
         const menuBtn = document.getElementById('mobile-menu-btn');
         const navLinks = document.getElementById('nav-links');
         if (menuBtn && navLinks) {
@@ -561,6 +719,7 @@
             });
         }
 
+        // Sidebar mobile
         const sidebarToggle = document.querySelector('.mobile-menu-toggle');
         const sidebar = document.querySelector('.dashboard-sidebar');
         if (sidebarToggle && sidebar) {
@@ -569,6 +728,7 @@
             });
         }
 
+        // Active link highlighting
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
         document.querySelectorAll('.nav-links a, .sidebar-nav .nav-item').forEach(function (link) {
             const href = link.getAttribute('href');
@@ -579,6 +739,7 @@
             }
         });
 
+        // Logout
         document.querySelectorAll('#logout-btn, [data-action="logout"]').forEach(function (btn) {
             btn.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -586,6 +747,7 @@
             });
         });
 
+        // User avatar & name display
         const user = VetLink.getCurrentUser();
         if (user) {
             document.querySelectorAll('#user-name-display, #welcome-name').forEach(function (el) {

@@ -183,88 +183,89 @@
 
         document.getElementById('register-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
-            const role = document.getElementById('user_role').value;
-            const fullName = document.getElementById('fullName').value.trim();
-            const username = document.getElementById('username').value.trim().toLowerCase();
-            const email = document.getElementById('email').value.trim().toLowerCase();
-            const phone = document.getElementById('phone').value.trim();
-            const location = document.getElementById('location').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                showToast('Passwords do not match.', 'error');
-                return;
-            }
+            const submitBtn = this.querySelector('button[type="submit"]');
 
-            if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(username)) {
-                showToast('Username must be 3-30 alphanumeric characters.', 'warning');
-                return;
-            }
-            
-            const users = VetLink.getUsers() || [];
-            
-            if (users.find(u => u.email === email)) {
-                showToast('Email is already registered.', 'error');
-                return;
-            }
-
-            if (users.find(u => (u.username || '').toLowerCase() === username)) {
-                showToast('Username is already taken. Please choose another.', 'warning');
-                return;
-            }
-            
-            const userId = 'USR-' + Math.floor(100000 + Math.random() * 900000);
-            const now = new Date().toISOString();
-
-            // Structure according to ER Diagram:
-            // users: user_id, user_role, username, password_hash, email, is_active, created_at
-            // profiles: name, pet_owner_profiles / vet_profiles
-            const newUser = {
-                user_id: userId,
-                id: userId,
-                user_role: role,
-                role: role,
-                username: username,
-                password_hash: password,
-                password: password,
-                email: email,
-                is_active: true,
-                created_at: now,
-                registeredAt: now,
-                // Profile attributes
-                name: fullName,
-                fullName: fullName,
-                phone_number: phone,
-                phone: phone,
-                location: location
-            };
-
-            if (role === 'veterinarian') {
-                newUser.license_number = document.getElementById('license_number').value.trim();
-                newUser.licenseNumber = newUser.license_number;
-                newUser.specialization = document.getElementById('specialization').value;
-                newUser.specialty = newUser.specialization;
-                newUser.clinic = document.getElementById('clinic_name').value.trim() || 'Companion Animal Clinic';
-                newUser.is_verified = true;
-                newUser.ratings = 5.0;
-                newUser.rating = 5.0;
-            }
-            
-            users.push(newUser);
-            VetLink.saveUsers(users);
-            localStorage.setItem('currentUser', JSON.stringify(newUser));
-            
-            showToast('Account created successfully! Welcome to VetLink.', 'success');
-            
-            setTimeout(() => {
-                if (role === 'veterinarian') {
-                    window.location.href = 'vet-dashboard.html';
-                } else {
-                    window.location.href = 'dashboard.html';
+            UIEngine.executeAsyncSafe(async () => {
+                const role = document.getElementById('user_role').value;
+                const fullName = document.getElementById('fullName').value.trim();
+                const username = document.getElementById('username').value.trim().toLowerCase();
+                const email = document.getElementById('email').value.trim().toLowerCase();
+                const phone = document.getElementById('phone').value.trim();
+                const location = document.getElementById('location').value;
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    showToast('Passwords do not match.', 'error');
+                    return;
                 }
-            }, 1000);
+
+                if (!/^[a-zA-Z0-9_.-]{3,30}$/.test(username)) {
+                    showToast('Username must be 3-30 alphanumeric characters.', 'warning');
+                    return;
+                }
+                
+                const users = VetLink.getUsers() || [];
+                
+                if (users.find(u => u.email === email)) {
+                    showToast('Email is already registered.', 'error');
+                    return;
+                }
+
+                if (users.find(u => (u.username || '').toLowerCase() === username)) {
+                    showToast('Username is already taken. Please choose another.', 'warning');
+                    return;
+                }
+
+                await new Promise(r => setTimeout(r, 200));
+                
+                const userId = 'USR-' + Math.floor(100000 + Math.random() * 900000);
+                const now = new Date().toISOString();
+
+                const newUser = {
+                    user_id: userId,
+                    id: userId,
+                    user_role: role,
+                    role: role,
+                    username: username,
+                    password_hash: password,
+                    password: password,
+                    email: email,
+                    is_active: true,
+                    created_at: now,
+                    registeredAt: now,
+                    name: fullName,
+                    fullName: fullName,
+                    phone_number: phone,
+                    phone: phone,
+                    location: location
+                };
+
+                if (role === 'veterinarian') {
+                    newUser.license_number = document.getElementById('license_number').value.trim();
+                    newUser.licenseNumber = newUser.license_number;
+                    newUser.specialization = document.getElementById('specialization').value;
+                    newUser.specialty = newUser.specialization;
+                    newUser.clinic = document.getElementById('clinic_name').value.trim() || 'Companion Animal Clinic';
+                    newUser.is_verified = true;
+                    newUser.ratings = 5.0;
+                    newUser.rating = 5.0;
+                }
+                
+                users.push(newUser);
+                VetLink.saveUsers(users);
+                localStorage.setItem('currentUser', JSON.stringify(newUser));
+                
+                showToast('Account created successfully! Welcome to VetLink.', 'success');
+                
+                setTimeout(() => {
+                    if (role === 'veterinarian') {
+                        window.location.href = 'vet-dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 700);
+            }, { button: submitBtn, loadingText: 'Creating Account...' });
         });
     </script>
 </body>

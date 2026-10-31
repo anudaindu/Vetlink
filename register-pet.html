@@ -190,59 +190,65 @@
                 }
             });
 
-            // Form Submit
+            // Form Submit with Anti-Spam & Async Safe Lifecycle
             document.getElementById('register-pet-form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const currentUser = VetLink.getCurrentUser();
-                
-                let selectedBreed = breedSelect.value;
-                if (selectedBreed === 'Other' && customBreedInput.value.trim()) {
-                    selectedBreed = customBreedInput.value.trim();
-                }
+                const submitBtn = this.querySelector('button[type="submit"]');
 
-                const speciesVal = speciesSelect.value;
-                const petName = document.getElementById('petName').value.trim();
-                const dobVal = document.getElementById('petDob').value;
-                const genderVal = genderSelect.value;
-                const colorVal = document.getElementById('petColor').value.trim();
-                const microchipVal = document.getElementById('petMicrochip').value.trim();
+                UIEngine.executeAsyncSafe(async () => {
+                    const currentUser = VetLink.getCurrentUser();
+                    
+                    let selectedBreed = breedSelect.value;
+                    if (selectedBreed === 'Other' && customBreedInput.value.trim()) {
+                        selectedBreed = customBreedInput.value.trim();
+                    }
 
-                // ER Entity: pets
-                // Attributes: pet_id (pk), species, name, breed, date_of_birth, gender
-                const newPet = {
-                    pet_id: generatedPetId,
-                    id: generatedPetId,
-                    species: speciesVal,
-                    type: speciesVal,
-                    name: petName,
-                    breed: selectedBreed,
-                    date_of_birth: dobVal,
-                    dob: dobVal,
-                    gender: genderVal,
-                    color: colorVal,
-                    microchip: microchipVal,
-                    owner_id: currentUser.user_id || currentUser.id,
-                    ownerId: currentUser.user_id || currentUser.id,
-                    owner_name: currentUser.name || currentUser.fullName,
-                    owner: currentUser.name || currentUser.fullName,
-                    phone_number: currentUser.phone_number || currentUser.phone || '',
-                    phone: currentUser.phone_number || currentUser.phone || '',
-                    image: speciesVal === 'Cat' 
-                        ? 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=200&h=200'
-                        : 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=200&h=200',
-                    vaccination_records: [],
-                    vaccinations: [],
-                    reminders: []
-                };
+                    const speciesVal = speciesSelect.value;
+                    const petName = document.getElementById('petName').value.trim();
+                    const dobVal = document.getElementById('petDob').value;
+                    const genderVal = genderSelect.value;
+                    const colorVal = document.getElementById('petColor').value.trim();
+                    const microchipVal = document.getElementById('petMicrochip').value.trim();
 
-                const allPets = VetLink.getPets() || [];
-                allPets.push(newPet);
-                VetLink.savePets(allPets);
+                    await new Promise(r => setTimeout(r, 200));
 
-                showToast(`Pet ${petName} registered successfully!`, 'success');
-                setTimeout(() => {
-                    window.location.href = 'my-pets.html';
-                }, 1000);
+                    // ER Entity: pets
+                    // Attributes: pet_id (pk), species, name, breed, date_of_birth, gender
+                    const newPet = {
+                        pet_id: generatedPetId,
+                        id: generatedPetId,
+                        species: speciesVal,
+                        type: speciesVal,
+                        name: petName,
+                        breed: selectedBreed,
+                        date_of_birth: dobVal,
+                        dob: dobVal,
+                        gender: genderVal,
+                        color: colorVal,
+                        microchip: microchipVal,
+                        owner_id: currentUser.user_id || currentUser.id,
+                        ownerId: currentUser.user_id || currentUser.id,
+                        owner_name: currentUser.name || currentUser.fullName,
+                        owner: currentUser.name || currentUser.fullName,
+                        phone_number: currentUser.phone_number || currentUser.phone || '',
+                        phone: currentUser.phone_number || currentUser.phone || '',
+                        image: speciesVal === 'Cat' 
+                            ? 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=200&h=200'
+                            : 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=80&w=200&h=200',
+                        vaccination_records: [],
+                        vaccinations: [],
+                        reminders: []
+                    };
+
+                    const allPets = VetLink.getPets() || [];
+                    allPets.push(newPet);
+                    VetLink.savePets(allPets);
+
+                    showToast(`Pet ${petName} registered successfully!`, 'success');
+                    setTimeout(() => {
+                        window.location.href = 'my-pets.html';
+                    }, 800);
+                }, { button: submitBtn, loadingText: 'Registering Pet...' });
             });
         });
     </script>
