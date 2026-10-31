@@ -11,7 +11,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.config import Config
-from app.database.connection import init_db
 from app.exceptions.exception_handlers import app_exception_handler, AppException
 from app.routers.auth_router import router as auth_router
 from app.routers.user_router import router as user_router
@@ -23,8 +22,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("Initializing the backend...")
     logger.info("Backend will run on %s:%s", Config.BACKEND_HOST, Config.BACKEND_PORT)
-    init_db()
-    logger.info("Database ready.")
+    # Tables are managed by Alembic: run `uv run alembic upgrade head`
     yield
     logger.info("Shutting down the backend...")
 
