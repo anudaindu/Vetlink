@@ -3,7 +3,6 @@ from pydantic import BaseModel, EmailStr
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
-    full_name: str | None = None
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -17,7 +16,6 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 class UserResponse(BaseModel):
-    id: int
     email: str
     full_name: str | None
     profile_picture: str | None
