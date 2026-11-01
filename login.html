@@ -3,12 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VetLink - Login</title>
+    <title>VetLink - Pet Owner Login</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .owner-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ccfbf1;
+            color: #0f766e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .tab-btn {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.6);
+            color: #1e293b;
+        }
+    </style>
 </head>
 <body class="bg-primary-light">
     <nav class="navbar">
@@ -21,59 +42,93 @@
             </div>
             <div class="nav-links">
                 <a href="index.html">Home</a>
-                <a href="login.html" class="active">Login</a>
+                <a href="login.html" class="active">Pet Owner Login</a>
+                <a href="vet-login.html" style="color: #0284c7; font-weight: 600;">Vet Portal</a>
                 <a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>
             </div>
         </div>
     </nav>
 
-    <main class="page-container py-60 flex justify-center items-center" style="min-height: calc(100vh - 70px);">
-        <div class="auth-card-container fade-in" style="width: 100%; max-width: 440px;">
-            <div class="card p-40">
-                <div class="text-center mb-30">
-                    <img src="assets/logo.png" alt="VetLink Logo" style="height: 48px; margin-bottom: 1rem;">
-                    <h2>Welcome Back</h2>
-                    <p class="text-muted">Sign in to your VetLink account</p>
+    <main class="page-container py-50 flex justify-center items-center" style="min-height: calc(100vh - 70px);">
+        <div class="auth-card-container fade-in" style="width: 100%; max-width: 460px;">
+            <div class="card p-35" style="border-top: 4px solid var(--primary-color); box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);">
+                
+                <!-- Role Switcher Segmented Control -->
+                <div class="login-role-tabs mb-25" style="display: flex; background: #e2e8f0; padding: 4px; border-radius: 10px;">
+                    <a href="login.html" class="tab-btn active" style="flex: 1; text-align: center; padding: 9px 12px; border-radius: 8px; font-weight: 700; text-decoration: none; background: white; color: var(--primary-color); box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;">
+                        <span>🐾</span> Pet Owner
+                    </a>
+                    <a href="vet-login.html" class="tab-btn" style="flex: 1; text-align: center; padding: 9px 12px; border-radius: 8px; font-weight: 600; text-decoration: none; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;">
+                        <span>🩺</span> Veterinarian
+                    </a>
+                </div>
+
+                <div class="text-center mb-25">
+                    <span class="owner-badge">
+                        <i data-lucide="paw-print" style="width: 14px; height: 14px;"></i>
+                        Pet Owner Portal
+                    </span>
+                    <h2 style="color: #0f172a; margin-bottom: 6px; font-size: 1.6rem;">Pet Owner Sign In</h2>
+                    <p class="text-muted" style="font-size: 0.9rem; margin: 0;">Access your pet's vaccination book, records & vet bookings</p>
                 </div>
                 
                 <form id="login-form">
                     <div class="input-group mb-20">
-                        <label for="identifier" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email or Username (AK)</label>
-                        <input type="text" id="identifier" name="identifier" class="w-full" placeholder="e.g. petowner or dr.nirmal" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                        <label for="identifier" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: #334155;">
+                            Email or Username
+                        </label>
+                        <div style="position: relative;">
+                            <input type="text" id="identifier" name="identifier" class="w-full" placeholder="e.g. petowner or owner@vetlink.lk" required style="padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+                            <i data-lucide="user" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #94a3b8;"></i>
+                        </div>
                     </div>
+
                     <div class="input-group mb-25">
-                        <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password</label>
-                        <input type="password" id="password" name="password" class="w-full" placeholder="Enter password (e.g. password123)" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                        <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: #334155;">
+                            Password
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" id="password" name="password" class="w-full" placeholder="Enter your password" required style="padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+                            <i data-lucide="lock" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #94a3b8;"></i>
+                        </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary w-full mb-20" style="justify-content: center; padding: 0.85rem; font-weight: 600;">Sign In</button>
+                    <button type="submit" class="btn btn-primary w-full mb-20" style="justify-content: center; padding: 0.85rem; font-weight: 600; font-size: 1rem; border-radius: 0.5rem;">
+                        <i data-lucide="log-in" style="width: 18px; height: 18px; margin-right: 6px;"></i>
+                        Sign In as Pet Owner
+                    </button>
 
-                    <!-- Quick Demo Accounts Widget -->
-                    <div style="background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                            <span style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;">
-                                🚀 Instant Demo Logins
+                    <!-- Instant Demo Logins Box -->
+                    <div style="background: #f0fdfa; border: 1px dashed #99f6e4; border-radius: 0.75rem; padding: 0.9rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+                            <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #0f766e;">
+                                🐾 Instant Pet Owner Demo
                             </span>
-                            <span style="font-size: 0.75rem; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">Click to test</span>
+                            <span style="font-size: 0.72rem; color: #0f766e; background: #ccfbf1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">1-Click</span>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                            <button type="button" id="demo-owner-btn" class="btn btn-outline" style="padding: 0.5rem 0.6rem; font-size: 0.8rem; display: flex; flex-direction: column; align-items: flex-start; text-align: left; background: white; border: 1px solid #cbd5e1;">
-                                <strong style="color: #0f766e; display: flex; align-items: center; gap: 4px;">🐾 Pet Owner</strong>
-                                <span style="font-size: 0.72rem; color: #64748b;">user: <b>petowner</b></span>
-                                <span style="font-size: 0.72rem; color: #64748b;">pass: <b>password123</b></span>
-                            </button>
+                        <button type="button" id="demo-owner-btn" class="btn w-full" style="background: white; border: 1px solid #a7f3d0; padding: 0.65rem 0.85rem; font-size: 0.82rem; display: flex; align-items: center; justify-content: space-between; text-align: left; border-radius: 6px;">
+                            <div>
+                                <strong style="color: #0f766e; display: block; font-size: 0.85rem;">Anuda Hettiarachchi</strong>
+                                <span style="font-size: 0.75rem; color: #64748b;">Pets: Max (Retriever) & Luna (Persian)</span>
+                            </div>
+                            <span style="background: var(--primary-color); color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Click to Login</span>
+                        </button>
+                    </div>
 
-                            <button type="button" id="demo-vet-btn" class="btn btn-outline" style="padding: 0.5rem 0.6rem; font-size: 0.8rem; display: flex; flex-direction: column; align-items: flex-start; text-align: left; background: white; border: 1px solid #cbd5e1;">
-                                <strong style="color: #0369a1; display: flex; align-items: center; gap: 4px;">🩺 Veterinarian</strong>
-                                <span style="font-size: 0.72rem; color: #64748b;">user: <b>dr.nirmal</b></span>
-                                <span style="font-size: 0.72rem; color: #64748b;">pass: <b>password123</b></span>
-                            </button>
-                        </div>
+                    <!-- Cross link to Vet Login -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem;">
+                        <span style="color: #64748b;">Are you a Veterinarian?</span>
+                        <a href="vet-login.html" style="color: #0284c7; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                            Vet Clinical Portal &rarr;
+                        </a>
                     </div>
                     
                     <div class="text-center">
-                        <p class="text-sm">Don't have an account? <a href="register.html" class="text-primary" style="font-weight: 600;">Create Account</a></p>
+                        <p class="text-sm" style="color: #64748b; margin: 0;">
+                            Don't have an account? 
+                            <a href="register.html" class="text-primary" style="font-weight: 600;">Create Account</a>
+                        </p>
                     </div>
                 </form>
             </div>
@@ -90,7 +145,7 @@
             VetLink.initMockData();
         }
 
-        async function loginUser(identifier, password, triggeringElement) {
+        async function loginOwner(identifier, password, triggeringElement) {
             identifier = (identifier || '').trim().toLowerCase();
             password = (password || '').trim();
 
@@ -136,33 +191,29 @@
                 user.user_role = user.role;
                 localStorage.setItem('currentUser', JSON.stringify(user));
                 
-                showToast('Signed in successfully!', 'success');
+                showToast(`Welcome back, ${user.fullName || user.name || 'Pet Owner'}!`, 'success');
                 setTimeout(() => {
                     if (user.role === 'veterinarian') {
+                        // User logged in with vet account on owner portal
+                        showToast('Note: Logged in as Veterinarian. Redirecting to Vet Dashboard...', 'info');
                         window.location.href = 'vet-dashboard.html';
-                    } else if (user.role === 'pet_owner') {
-                        window.location.href = 'dashboard.html';
                     } else {
-                        window.location.href = 'role-selection.html';
+                        window.location.href = 'dashboard.html';
                     }
                 }, 300);
             } else {
-                showToast('Invalid email/username or password. Please use demo credentials.', 'error');
+                showToast('Invalid email or username. Try username "petowner" and password "password123"', 'error');
             }
         }
 
+        // 1-Click Pet Owner Demo Button
         document.getElementById('demo-owner-btn').addEventListener('click', function() {
             document.getElementById('identifier').value = 'petowner';
             document.getElementById('password').value = 'password123';
-            loginUser('petowner', 'password123', this);
+            loginOwner('petowner', 'password123', this);
         });
 
-        document.getElementById('demo-vet-btn').addEventListener('click', function() {
-            document.getElementById('identifier').value = 'dr.nirmal';
-            document.getElementById('password').value = 'password123';
-            loginUser('dr.nirmal', 'password123', this);
-        });
-
+        // Form Submit
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const submitBtn = this.querySelector('button[type="submit"]');
@@ -170,7 +221,7 @@
             const password = document.getElementById('password').value;
 
             UIEngine.executeAsyncSafe(async () => {
-                await loginUser(identifier, password, submitBtn);
+                await loginOwner(identifier, password, submitBtn);
             }, { button: submitBtn, loadingText: 'Signing in...' });
         });
     </script>

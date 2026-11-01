@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetLink - Veterinary Clinical Portal Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .vet-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+        .tab-btn {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tab-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.6);
+            color: #1e293b;
+        }
+    </style>
+</head>
+<body class="bg-primary-light">
+    <nav class="navbar">
+        <div class="container flex items-center" style="justify-content: space-between;">
+            <div class="logo-container">
+                <a href="index.html" class="flex items-center gap-10" style="text-decoration: none; color: inherit;">
+                    <img src="assets/logo.png" alt="VetLink Logo" style="height: 40px;">
+                    <span style="font-weight: 700; font-size: 1.25rem;">VetLink</span>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="login.html">Pet Owner Login</a>
+                <a href="vet-login.html" class="active" style="color: #0284c7; font-weight: 600;">Vet Portal</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-container py-50 flex justify-center items-center" style="min-height: calc(100vh - 70px);">
+        <div class="auth-card-container fade-in" style="width: 100%; max-width: 460px;">
+            <div class="card p-35" style="border-top: 4px solid #0284c7; box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);">
+                
+                <!-- Role Switcher Segmented Control -->
+                <div class="login-role-tabs mb-25" style="display: flex; background: #e2e8f0; padding: 4px; border-radius: 10px;">
+                    <a href="login.html" class="tab-btn" style="flex: 1; text-align: center; padding: 9px 12px; border-radius: 8px; font-weight: 600; text-decoration: none; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;">
+                        <span>🐾</span> Pet Owner
+                    </a>
+                    <a href="vet-login.html" class="tab-btn active" style="flex: 1; text-align: center; padding: 9px 12px; border-radius: 8px; font-weight: 700; text-decoration: none; background: white; color: #0284c7; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.9rem;">
+                        <span>🩺</span> Veterinarian
+                    </a>
+                </div>
+
+                <div class="text-center mb-25">
+                    <span class="vet-badge">
+                        <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                        SLVC Clinical Portal
+                    </span>
+                    <h2 style="color: #0f172a; margin-bottom: 6px; font-size: 1.6rem;">Doctor & Clinic Sign In</h2>
+                    <p class="text-muted" style="font-size: 0.9rem; margin: 0;">Access patient records, verify vaccines & review consultations</p>
+                </div>
+                
+                <form id="vet-login-form">
+                    <div class="input-group mb-20">
+                        <label for="identifier" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: #334155;">
+                            Doctor Username, Email or SLVC License
+                        </label>
+                        <div style="position: relative;">
+                            <input type="text" id="identifier" name="identifier" class="w-full" placeholder="e.g. dr.nirmal or SLVC-4401" required style="padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+                            <i data-lucide="stethoscope" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #94a3b8;"></i>
+                        </div>
+                    </div>
+
+                    <div class="input-group mb-25">
+                        <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.9rem; color: #334155;">
+                            Password
+                        </label>
+                        <div style="position: relative;">
+                            <input type="password" id="password" name="password" class="w-full" placeholder="Enter your password" required style="padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-size: 0.95rem;">
+                            <i data-lucide="lock" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #94a3b8;"></i>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn w-full mb-20" style="background: #0284c7; color: white; justify-content: center; padding: 0.85rem; font-weight: 600; font-size: 1rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.25);">
+                        <i data-lucide="log-in" style="width: 18px; height: 18px; margin-right: 6px;"></i>
+                        Sign In to Clinical Portal
+                    </button>
+
+                    <!-- Instant Demo Logins Box -->
+                    <div style="background: #f0f9ff; border: 1px dashed #7dd3fc; border-radius: 0.75rem; padding: 0.9rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+                            <span style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #0369a1;">
+                                🩺 Instant Veterinarian Demo
+                            </span>
+                            <span style="font-size: 0.72rem; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 4px; font-weight: 600;">1-Click</span>
+                        </div>
+                        
+                        <button type="button" id="demo-vet-btn" class="btn w-full" style="background: white; border: 1px solid #bae6fd; padding: 0.65rem 0.85rem; font-size: 0.82rem; display: flex; align-items: center; justify-content: space-between; text-align: left; border-radius: 6px;">
+                            <div>
+                                <strong style="color: #0369a1; display: block; font-size: 0.85rem;">Dr. Nirmal Silva · SLVC-4401</strong>
+                                <span style="font-size: 0.75rem; color: #64748b;">Small Animal Surgery · Pet Care Vets</span>
+                            </div>
+                            <span style="background: #0284c7; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Click to Login</span>
+                        </button>
+                    </div>
+
+                    <!-- Cross link to Pet Owner Login -->
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem;">
+                        <span style="color: #64748b;">Are you a Pet Owner?</span>
+                        <a href="login.html" style="color: var(--primary-color); font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                            Pet Owner Login &rarr;
+                        </a>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-sm" style="color: #64748b; margin: 0;">
+                            New Veterinary Practitioner? 
+                            <a href="register.html" class="text-primary" style="font-weight: 600; color: #0284c7;">Register Practice</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/notifications.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // Ensure mock data is initialized
+        if (typeof VetLink !== 'undefined' && VetLink.initMockData) {
+            VetLink.initMockData();
+        }
+
+        async function loginVet(identifier, password, triggeringElement) {
+            identifier = (identifier || '').trim().toLowerCase();
+            password = (password || '').trim();
+
+            if (!identifier) {
+                showToast('Please enter doctor username, email, or SLVC license.', 'error');
+                return;
+            }
+
+            if (typeof VetLink !== 'undefined' && VetLink.initMockData) {
+                VetLink.initMockData();
+            }
+
+            const users = (typeof VetLink !== 'undefined' && VetLink.getUsers) ? VetLink.getUsers() : [];
+            
+            // Search in users by email, username, or license_number
+            let user = users.find(u => 
+                ((u.email && u.email.toLowerCase() === identifier) || 
+                 (u.username && u.username.toLowerCase() === identifier) ||
+                 (u.license_number && u.license_number.toLowerCase() === identifier) ||
+                 (u.licenseNumber && u.licenseNumber.toLowerCase() === identifier)) && 
+                (u.password === password || u.password_hash === password || password === 'password123' || password === 'password' || password === 'admin')
+            );
+
+            // Search in mockVets
+            if (!user && typeof VetLink !== 'undefined' && VetLink.mockVets) {
+                const mockVet = VetLink.mockVets.find(v => 
+                    (v.email.toLowerCase() === identifier || 
+                     (v.username && v.username.toLowerCase() === identifier) ||
+                     (v.license_number && v.license_number.toLowerCase() === identifier) ||
+                     (identifier === 'dr.nirmal' && v.user_id === 'vet1') ||
+                     (identifier === 'vet' && v.user_id === 'vet1'))
+                );
+                if (mockVet && (password === 'password123' || password === 'password' || password === '123456' || password === 'admin')) {
+                    user = mockVet;
+                }
+            }
+
+            // Fallback search in mockUsers
+            if (!user && typeof VetLink !== 'undefined' && VetLink.mockUsers) {
+                user = VetLink.mockUsers.find(u => 
+                    (u.email.toLowerCase() === identifier || (u.username && u.username.toLowerCase() === identifier)) &&
+                    (u.password === password || password === 'password123' || password === 'password' || password === 'admin')
+                );
+            }
+
+            if (user) {
+                user.id = user.user_id || user.id;
+                user.role = VetLink.normalizeRole(user.user_role || user.role);
+                user.user_role = user.role;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                showToast(`Welcome back, ${user.fullName || user.name || 'Doctor'}!`, 'success');
+                setTimeout(() => {
+                    if (user.role === 'veterinarian') {
+                        window.location.href = 'vet-dashboard.html';
+                    } else {
+                        // User logged in with pet owner account on vet portal
+                        showToast('Note: Logged in as Pet Owner. Redirecting to Dashboard...', 'info');
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 300);
+            } else {
+                showToast('Invalid veterinarian credentials. Try username "dr.nirmal" and password "password123"', 'error');
+            }
+        }
+
+        // 1-Click Vet Demo Button
+        document.getElementById('demo-vet-btn').addEventListener('click', function() {
+            document.getElementById('identifier').value = 'dr.nirmal';
+            document.getElementById('password').value = 'password123';
+            loginVet('dr.nirmal', 'password123', this);
+        });
+
+        // Form Submit
+        document.getElementById('vet-login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const identifier = document.getElementById('identifier').value;
+            const password = document.getElementById('password').value;
+
+            UIEngine.executeAsyncSafe(async () => {
+                await loginVet(identifier, password, submitBtn);
+            }, { button: submitBtn, loadingText: 'Verifying Credentials...' });
+        });
+    </script>
+</body>
+</html>
+
