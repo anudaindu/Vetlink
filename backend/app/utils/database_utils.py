@@ -1,18 +1,27 @@
+from typing import TypeVar
+
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session
+from sqlmodel import Session, SQLModel
 
 from app.exceptions.exceptions import AlreadyExistsException
-from app.models.entity.user import Users
+
+T = TypeVar("T", bound=SQLModel)
+
 
 class DBUtils:
-    
+
     @staticmethod
-    def commit(user: Users, db: Session) -> None:
-        db.add(user)
+    def commit(db: Session, conflict_message: str = "Resource already exists") -> None:
         try:
             db.commit()
         except IntegrityError:
-            # Unique email constraint hit by a concurrent request
+            # Unique/FK constraint hit (e.g. by a concurrent request)
             db.rollback()
-            raise AlreadyExistsException("User with this email already exists")
-        db.refresh(user)
+            raise AlreadyExistsException(conflict_message)
+
+    @staticmethod
+    def commit_and_refresh(entity: T, db: Session, conflict_message: str = "Resource already exists") -> T:
+        db.add(entity)
+        DBUtils.commit(db, conflict_message)
+        db.refresh(entity)
+        return entity

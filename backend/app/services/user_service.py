@@ -20,7 +20,7 @@ class UserService:
             **user_create.model_dump(exclude={"password"}),
             password_hash=hash_password(user_create.password),
         )
-        DBUtils.commit(new_user, db)
+        DBUtils.commit_and_refresh(new_user, db, "User with this email already exists")
         return UserResponseDTO.model_validate(new_user)
 
     @staticmethod
@@ -32,5 +32,5 @@ class UserService:
                 raise AlreadyExistsException("User with this email already exists")
 
         target_user.sqlmodel_update(changes)
-        DBUtils.commit(target_user, db)
+        DBUtils.commit_and_refresh(target_user, db, "User with this email already exists")
         return UserResponseDTO.model_validate(target_user)
