@@ -14,3 +14,7 @@ Password = Annotated[
     Field(min_length=8, max_length=72, description="The password for the user account"),
     AfterValidator(_check_password_bytes),
 ]
+
+# user_profiles ----------------
+SLPhoneNumber = Annotated[str,Field(pattern=r"^0[1-9]\d{8}$")]
+OwnerName = Annotated[str,Field(min_length=1,max_length=50)]

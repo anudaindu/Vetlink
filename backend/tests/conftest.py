@@ -52,7 +52,7 @@ def create_user(session):
     def _create_user(
         email: str = "client@example.com",
         password: str | None = DEFAULT_PASSWORD,
-        role: UserRole = UserRole.CLIENT,
+        role: UserRole = UserRole.PET_OWNER,
         is_active: bool = True,
     ) -> Users:
         user = Users(

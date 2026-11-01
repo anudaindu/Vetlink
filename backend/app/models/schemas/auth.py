@@ -1,9 +1,5 @@
 from pydantic import BaseModel, EmailStr
 
-class RegisterRequest(BaseModel):
-    email: EmailStr
-    password: str
-
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -14,10 +10,3 @@ class GoogleLoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
-class UserResponse(BaseModel):
-    email: str
-    full_name: str | None
-    profile_picture: str | None
-    auth_provider: str
-    email_verified: bool

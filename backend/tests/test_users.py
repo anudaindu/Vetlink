@@ -7,7 +7,7 @@ from app.models.entity.user import Users
 
 
 def register(client, **overrides):
-    body = {"user_role": "client", "email": "new@example.com", "password": "password123"}
+    body = {"user_role": "pet_owner", "email": "new@example.com", "password": "password123"}
     body.update(overrides)
     return client.post("/register", json=body)
 
@@ -23,7 +23,7 @@ def test_register_success(client, session):
     response = register(client)
 
     assert response.status_code == 201
-    assert response.json() == {"email": "new@example.com", "user_role": "client"}
+    assert response.json() == {"email": "new@example.com", "user_role": "pet_owner"}
 
     user = get_db_user(session, "new@example.com")
     assert user is not None
@@ -35,6 +35,15 @@ def test_register_vet(client):
     response = register(client, user_role="vet")
     assert response.status_code == 201
     assert response.json()["user_role"] == "vet"
+
+
+@pytest.mark.parametrize("role", ["PET_OWNER", "Pet_Owner", "VET", "Vet"])
+def test_register_role_is_case_insensitive(client, session, role):
+    response = register(client, user_role=role)
+
+    assert response.status_code == 201
+    assert response.json()["user_role"] == role.lower()
+    assert get_db_user(session, "new@example.com").user_role == UserRole(role.lower())
 
 
 def test_register_stores_hashed_password(client, session):
@@ -103,7 +112,6 @@ def test_register_invalid_password(client, password, reason):
 @pytest.mark.parametrize("overrides, field", [
     ({"email": "not-an-email"}, "email"),
     ({"user_role": "admin"}, "user_role"),
-    ({"user_role": "CLIENT"}, "user_role"),
     ({"username": "bob"}, "username"),
 ])
 def test_register_invalid_fields(client, overrides, field):
@@ -114,7 +122,7 @@ def test_register_invalid_fields(client, overrides, field):
 
 @pytest.mark.parametrize("missing", ["email", "password", "user_role"])
 def test_register_missing_field(client, missing):
-    body = {"user_role": "client", "email": "new@example.com", "password": "password123"}
+    body = {"user_role": "pet_owner", "email": "new@example.com", "password": "password123"}
     del body[missing]
     assert client.post("/register", json=body).status_code == 422
 
@@ -122,7 +130,7 @@ def test_register_missing_field(client, missing):
 def test_register_invalid_json(client):
     response = client.post(
         "/register",
-        content='{"user_role": "client", "email": "new@example.com", "password": "12345678\n"}',
+        content='{"user_role": "pet_owner", "email": "new@example.com", "password": "12345678\n"}',
         headers={"Content-Type": "application/json"},
     )
     assert response.status_code == 422
@@ -226,5 +234,5 @@ def test_update_rejects_invalid_or_forbidden_fields(client, create_user, auth_he
 
     assert response.status_code == 422
     user = get_db_user(session, "client@example.com")
-    assert user.user_role == UserRole.CLIENT
+    assert user.user_role == UserRole.PET_OWNER
     assert user.is_active

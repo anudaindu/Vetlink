@@ -1,19 +1,17 @@
-from typing import Annotated
+from typing import Annotated, Callable
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 
 from app.auth.jwt import decode_access_token
 from app.dependencies.type import DBSession
-from app.exceptions.exceptions import UnauthorizedException
+from app.exceptions.exceptions import ForbiddenException, UnauthorizedException
 from app.models.entity.user import Users
+from app.models.common.enum import UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token", auto_error=False)
 
 
-def get_current_user(
-    token: Annotated[str | None, Depends(oauth2_scheme)],
-    db: DBSession,
-) -> Users:
+def get_current_user(token: Annotated[str | None, Depends(oauth2_scheme)],db: DBSession) -> Users:
     if token is None:
         raise UnauthorizedException("Not authenticated")
 
@@ -27,4 +25,15 @@ def get_current_user(
     return user
 
 
+def require_role(*roles: UserRole) -> Callable[..., Users]:
+    def role_checker(user: Users = Depends(get_current_user)) -> Users:
+        if user.user_role not in roles:
+            raise ForbiddenException("Insufficient permissions")
+        return user
+
+    return role_checker
+
+
 CurrentUser = Annotated[Users, Depends(get_current_user)]
+CurrentUserVet = Annotated[Users, Depends(require_role(UserRole.VET))]
+CurrentUserPetOwner = Annotated[Users, Depends(require_role(UserRole.PET_OWNER))]
