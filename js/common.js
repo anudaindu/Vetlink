@@ -70,7 +70,11 @@
         isClickSpam: function (element) {
             if (!element) return false;
             const now = performance.now();
-            const last = this.lastClickTime.get(element) || 0;
+            if (!this.lastClickTime.has(element)) {
+                this.lastClickTime.set(element, now);
+                return false;
+            }
+            const last = this.lastClickTime.get(element);
             if (now - last < this.SPAM_THRESHOLD_MS) return true;
             this.lastClickTime.set(element, now);
             return false;
@@ -136,7 +140,7 @@
             const btn = options ? options.button : null;
 
             if (btn) {
-                if (this.isClickSpam(btn) || this.activeLocks.has(btn)) return null;
+                if (this.activeLocks.has(btn) || (btn instanceof HTMLButtonElement && btn.disabled)) return null;
                 this.lockElement(btn, options ? options.loadingText : null);
             }
 
@@ -220,7 +224,7 @@
                 const form = e.target;
                 if (!form || !(form instanceof HTMLFormElement)) return;
                 const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
-                if (submitBtn && this.isClickSpam(submitBtn)) {
+                if (submitBtn && (submitBtn.disabled || submitBtn.classList.contains('is-loading'))) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                 }
@@ -577,10 +581,10 @@
             date_of_birth: '2022-05-15',
             dob: '2022-05-15',
             gender: 'Male',
-            owner: 'Anuda H',
-            ownerName: 'Anuda H',
-            owner_id: '',
-            ownerId: '',
+            owner: 'Anuda Hettiarachchi',
+            ownerName: 'Anuda Hettiarachchi',
+            owner_id: 'usr_demo_owner',
+            ownerId: 'usr_demo_owner',
             phone_number: '077 123 4567',
             color: 'Golden',
             microchip: '985112345678901',
@@ -600,11 +604,11 @@
             date_of_birth: '2022-10-01',
             dob: '2022-10-01',
             gender: 'Female',
-            owner: 'Anuda H',
-            ownerName: 'Anuda H',
-            owner_id: '',
-            ownerId: '',
-            phone_number: '0771234567',
+            owner: 'Anuda Hettiarachchi',
+            ownerName: 'Anuda Hettiarachchi',
+            owner_id: 'usr_demo_owner',
+            ownerId: 'usr_demo_owner',
+            phone_number: '077 123 4567',
             color: 'White',
             microchip: '985112345678902',
             image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=200&h=200',
@@ -614,9 +618,69 @@
         }
     ];
 
+    // ---- Mock Demo Users ----
+    VetLink.mockUsers = [
+        {
+            user_id: 'usr_demo_owner',
+            id: 'usr_demo_owner',
+            user_role: 'pet_owner',
+            role: 'pet_owner',
+            username: 'petowner',
+            name: 'Anuda Hettiarachchi',
+            fullName: 'Anuda Hettiarachchi',
+            email: 'owner@vetlink.lk',
+            phone_number: '077 123 4567',
+            phone: '077 123 4567',
+            location: 'Colombo',
+            password: 'password123',
+            password_hash: 'password123',
+            is_active: true,
+            created_at: '2024-01-01T00:00:00.000Z'
+        },
+        {
+            user_id: 'vet1',
+            id: 'vet1',
+            user_role: 'veterinarian',
+            role: 'veterinarian',
+            username: 'dr.nirmal',
+            name: 'Dr. Nirmal Silva',
+            fullName: 'Dr. Nirmal Silva',
+            email: 'vet@vetlink.lk',
+            phone_number: '0112 555 123',
+            phone: '0112 555 123',
+            location: 'Colombo',
+            clinic: 'Pet Care Vets Colombo',
+            license_number: 'SLVC-4401',
+            specialization: 'Small Animal Surgery',
+            specialty: 'Small Animal Surgery',
+            is_verified: true,
+            ratings: 4.8,
+            rating: 4.8,
+            password: 'password123',
+            password_hash: 'password123',
+            is_active: true,
+            created_at: '2024-01-01T00:00:00.000Z'
+        }
+    ];
+
     VetLink.initMockData = function () {
         if (!localStorage.getItem('pets') || VetLink.getPets().length === 0) {
             VetLink.savePets(VetLink.mockPets);
+        }
+        const existingUsers = VetLink.getUsers();
+        if (existingUsers.length === 0) {
+            VetLink.saveUsers(VetLink.mockUsers);
+        } else {
+            let updated = false;
+            VetLink.mockUsers.forEach(demoUser => {
+                if (!existingUsers.some(u => u.email === demoUser.email || (u.username && u.username.toLowerCase() === demoUser.username.toLowerCase()))) {
+                    existingUsers.push(demoUser);
+                    updated = true;
+                }
+            });
+            if (updated) {
+                VetLink.saveUsers(existingUsers);
+            }
         }
     };
 

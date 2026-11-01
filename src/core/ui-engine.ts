@@ -75,7 +75,11 @@ export class UIEngine {
    */
   public static isClickSpam(element: HTMLElement): boolean {
     const now = performance.now();
-    const last = this.lastClickTime.get(element) || 0;
+    if (!this.lastClickTime.has(element)) {
+      this.lastClickTime.set(element, now);
+      return false;
+    }
+    const last = this.lastClickTime.get(element)!;
 
     if (now - last < this.SPAM_THRESHOLD_MS) {
       return true;
@@ -163,7 +167,7 @@ export class UIEngine {
     const btn = options?.button;
 
     if (btn) {
-      if (this.isClickSpam(btn) || this.activeLocks.has(btn)) {
+      if (this.activeLocks.has(btn) || (btn instanceof HTMLButtonElement && btn.disabled)) {
         return null;
       }
       this.lockElement(btn, options?.loadingText);
@@ -292,12 +296,10 @@ export class UIEngine {
       if (!form || !(form instanceof HTMLFormElement)) return;
 
       const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]') as HTMLElement | null;
-      if (submitBtn) {
-        if (this.isClickSpam(submitBtn)) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          return;
-        }
+      if (submitBtn && (submitBtn.hasAttribute('disabled') || submitBtn.classList.contains('is-loading'))) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
       }
     }, true);
 

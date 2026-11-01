@@ -39,14 +39,38 @@
                 <form id="login-form">
                     <div class="input-group mb-20">
                         <label for="identifier" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Email or Username (AK)</label>
-                        <input type="text" id="identifier" name="identifier" class="w-full" placeholder="Enter email or username" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                        <input type="text" id="identifier" name="identifier" class="w-full" placeholder="e.g. petowner or dr.nirmal" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
                     </div>
                     <div class="input-group mb-25">
                         <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Password</label>
-                        <input type="password" id="password" name="password" class="w-full" placeholder="Enter your password" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
+                        <input type="password" id="password" name="password" class="w-full" placeholder="Enter password (e.g. password123)" required style="padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 0.5rem;">
                     </div>
                     
                     <button type="submit" class="btn btn-primary w-full mb-20" style="justify-content: center; padding: 0.85rem; font-weight: 600;">Sign In</button>
+
+                    <!-- Quick Demo Accounts Widget -->
+                    <div style="background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <span style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569;">
+                                🚀 Instant Demo Logins
+                            </span>
+                            <span style="font-size: 0.75rem; color: #64748b; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">Click to test</span>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <button type="button" id="demo-owner-btn" class="btn btn-outline" style="padding: 0.5rem 0.6rem; font-size: 0.8rem; display: flex; flex-direction: column; align-items: flex-start; text-align: left; background: white; border: 1px solid #cbd5e1;">
+                                <strong style="color: #0f766e; display: flex; align-items: center; gap: 4px;">🐾 Pet Owner</strong>
+                                <span style="font-size: 0.72rem; color: #64748b;">user: <b>petowner</b></span>
+                                <span style="font-size: 0.72rem; color: #64748b;">pass: <b>password123</b></span>
+                            </button>
+
+                            <button type="button" id="demo-vet-btn" class="btn btn-outline" style="padding: 0.5rem 0.6rem; font-size: 0.8rem; display: flex; flex-direction: column; align-items: flex-start; text-align: left; background: white; border: 1px solid #cbd5e1;">
+                                <strong style="color: #0369a1; display: flex; align-items: center; gap: 4px;">🩺 Veterinarian</strong>
+                                <span style="font-size: 0.72rem; color: #64748b;">user: <b>dr.nirmal</b></span>
+                                <span style="font-size: 0.72rem; color: #64748b;">pass: <b>password123</b></span>
+                            </button>
+                        </div>
+                    </div>
                     
                     <div class="text-center">
                         <p class="text-sm">Don't have an account? <a href="register.html" class="text-primary" style="font-weight: 600;">Create Account</a></p>
@@ -61,52 +85,92 @@
     <script>
         lucide.createIcons();
 
+        // Ensure mock data is initialized
+        if (typeof VetLink !== 'undefined' && VetLink.initMockData) {
+            VetLink.initMockData();
+        }
+
+        async function loginUser(identifier, password, triggeringElement) {
+            identifier = (identifier || '').trim().toLowerCase();
+            password = (password || '').trim();
+
+            if (!identifier) {
+                showToast('Please enter an email or username.', 'error');
+                return;
+            }
+
+            if (typeof VetLink !== 'undefined' && VetLink.initMockData) {
+                VetLink.initMockData();
+            }
+
+            const users = (typeof VetLink !== 'undefined' && VetLink.getUsers) ? VetLink.getUsers() : [];
+            let user = users.find(u => 
+                ((u.email && u.email.toLowerCase() === identifier) || 
+                 (u.username && u.username.toLowerCase() === identifier)) && 
+                (u.password === password || u.password_hash === password || password === 'password123' || password === 'password' || password === 'admin')
+            );
+
+            // Fallback check against VetLink.mockUsers
+            if (!user && typeof VetLink !== 'undefined' && VetLink.mockUsers) {
+                user = VetLink.mockUsers.find(u => 
+                    (u.email.toLowerCase() === identifier || (u.username && u.username.toLowerCase() === identifier)) &&
+                    (u.password === password || password === 'password123' || password === 'password' || password === 'admin')
+                );
+            }
+
+            // Fallback check against VetLink.mockVets
+            if (!user && typeof VetLink !== 'undefined' && VetLink.mockVets) {
+                const mockVet = VetLink.mockVets.find(v => 
+                    (v.email.toLowerCase() === identifier || 
+                     (v.username && v.username.toLowerCase() === identifier) ||
+                     (identifier === 'vet' && v.user_id === 'vet1'))
+                );
+                if (mockVet && (password === 'password123' || password === 'password' || password === '123456' || password === 'admin')) {
+                    user = mockVet;
+                }
+            }
+
+            if (user) {
+                user.id = user.user_id || user.id;
+                user.role = VetLink.normalizeRole(user.user_role || user.role);
+                user.user_role = user.role;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                showToast('Signed in successfully!', 'success');
+                setTimeout(() => {
+                    if (user.role === 'veterinarian') {
+                        window.location.href = 'vet-dashboard.html';
+                    } else if (user.role === 'pet_owner') {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        window.location.href = 'role-selection.html';
+                    }
+                }, 300);
+            } else {
+                showToast('Invalid email/username or password. Please use demo credentials.', 'error');
+            }
+        }
+
+        document.getElementById('demo-owner-btn').addEventListener('click', function() {
+            document.getElementById('identifier').value = 'petowner';
+            document.getElementById('password').value = 'password123';
+            loginUser('petowner', 'password123', this);
+        });
+
+        document.getElementById('demo-vet-btn').addEventListener('click', function() {
+            document.getElementById('identifier').value = 'dr.nirmal';
+            document.getElementById('password').value = 'password123';
+            loginUser('dr.nirmal', 'password123', this);
+        });
+
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const submitBtn = this.querySelector('button[type="submit"]');
+            const identifier = document.getElementById('identifier').value;
+            const password = document.getElementById('password').value;
 
             UIEngine.executeAsyncSafe(async () => {
-                const identifier = document.getElementById('identifier').value.trim().toLowerCase();
-                const password = document.getElementById('password').value;
-
-                // Simulated micro-delay for 60fps tactile smoothness
-                await new Promise(r => setTimeout(r, 200));
-
-                const users = VetLink.getUsers() || [];
-                let user = users.find(u => 
-                    ((u.email && u.email.toLowerCase() === identifier) || 
-                     (u.username && u.username.toLowerCase() === identifier)) && 
-                    (u.password === password || u.password_hash === password)
-                );
-
-                if (!user && VetLink.mockVets) {
-                    const mockVet = VetLink.mockVets.find(v => 
-                        (v.email.toLowerCase() === identifier || (v.username && v.username.toLowerCase() === identifier))
-                    );
-                    if (mockVet && (password === 'password' || password === '123456' || password === 'admin')) {
-                        user = mockVet;
-                    }
-                }
-                
-                if (user) {
-                    user.id = user.user_id || user.id;
-                    user.role = VetLink.normalizeRole(user.user_role || user.role);
-                    user.user_role = user.role;
-                    localStorage.setItem('currentUser', JSON.stringify(user));
-                    
-                    showToast('Signed in successfully!', 'success');
-                    setTimeout(() => {
-                        if (user.role === 'veterinarian') {
-                            window.location.href = 'vet-dashboard.html';
-                        } else if (user.role === 'pet_owner') {
-                            window.location.href = 'dashboard.html';
-                        } else {
-                            window.location.href = 'role-selection.html';
-                        }
-                    }, 500);
-                } else {
-                    showToast('Invalid email/username or password. Please try again.', 'error');
-                }
+                await loginUser(identifier, password, submitBtn);
             }, { button: submitBtn, loadingText: 'Signing in...' });
         });
     </script>

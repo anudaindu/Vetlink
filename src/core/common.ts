@@ -485,8 +485,45 @@ export class VetLinkApp {
   }
 
   public static initMockData(): void {
+    if (typeof localStorage === 'undefined') return;
     if (!localStorage.getItem('pets') || this.getPets().length === 0) {
       this.savePets(this.mockPets);
+    }
+    const existingUsers = this.getUsers();
+    if (existingUsers.length === 0) {
+      const demoUsers = [
+        {
+          id: 'usr_demo_owner',
+          user_id: 'usr_demo_owner',
+          user_role: 'pet_owner' as const,
+          role: 'pet_owner' as const,
+          username: 'petowner',
+          name: 'Anuda Hettiarachchi',
+          fullName: 'Anuda Hettiarachchi',
+          email: 'owner@vetlink.lk',
+          phone_number: '077 123 4567',
+          phone: '077 123 4567',
+          location: 'Colombo',
+          is_active: true,
+          created_at: '2024-01-01T00:00:00.000Z'
+        },
+        {
+          id: 'vet1',
+          user_id: 'vet1',
+          user_role: 'veterinarian' as const,
+          role: 'veterinarian' as const,
+          username: 'dr.nirmal',
+          name: 'Dr. Nirmal Silva',
+          fullName: 'Dr. Nirmal Silva',
+          email: 'vet@vetlink.lk',
+          phone_number: '0112 555 123',
+          phone: '0112 555 123',
+          location: 'Colombo',
+          is_active: true,
+          created_at: '2024-01-01T00:00:00.000Z'
+        }
+      ];
+      this.saveUsers(demoUsers);
     }
   }
 }
