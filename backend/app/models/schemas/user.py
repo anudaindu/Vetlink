@@ -1,12 +1,11 @@
-from pydantic import AfterValidator, BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BeforeValidator, BaseModel, EmailStr, Field, ConfigDict
 from typing import Annotated
 
 from app.models.common.type import Password
 from app.models.common.enum import UserRole
 
-
-Email = Annotated[EmailStr, AfterValidator(str.lower), Field(description="The email address of the user account")]
-Role = Annotated[UserRole, Field(description="The role of the user account")]
+Email = Annotated[EmailStr, BeforeValidator(str.lower), Field(description="The email address of the user account")]
+Role = Annotated[UserRole, BeforeValidator(str.lower), Field(description="The role of the user account")]
 
 
 class UserCreate(BaseModel):
