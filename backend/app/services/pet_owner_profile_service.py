@@ -2,7 +2,10 @@ from sqlmodel import Session, select
 
 from app.models.entity.user import Users
 from app.models.entity.pet_owner_profile import PetOwnerProfile
+from app.models.entity.vet_profile import VetProfile
+
 from app.models.schemas.pet_owner_profile import PetOwnerProfileResponseDTO, PetOwnerProfileCreate, PetOwnerProfileUpdate
+from app.models.schemas.vet_owner_profile import VetProfileClientResponseDTO
 
 from app.utils.database_utils import DBUtils
 from app.exceptions.exceptions import AlreadyExistsException, NotFoundException
@@ -34,6 +37,21 @@ class PetOwnerProfileService:
         if profile is None:
             raise NotFoundException("Pet owner profile not found")
         return PetOwnerProfileResponseDTO.model_validate(profile)
+    
+    @staticmethod
+    def get_vet_profile_by_id(user_id: int, db: Session) -> VetProfileClientResponseDTO:
+        profile = db.get(VetProfile, user_id)
+        if profile is None:
+            raise NotFoundException("Vet profile not found")
+        return VetProfileClientResponseDTO.model_validate(profile)
+    
+    @staticmethod
+    def get_vet_profiles(db:Session) -> list[VetProfileClientResponseDTO]:
+        profiles = db.exec(
+            select(VetProfile)
+        ).all()
+        return [VetProfileClientResponseDTO.model_validate(profile) for profile in profiles]
+    
 
     @staticmethod
     def update_pet_owner_profile(current_user: Users, data: PetOwnerProfileUpdate, db: Session) -> PetOwnerProfileResponseDTO:
