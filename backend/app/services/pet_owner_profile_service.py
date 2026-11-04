@@ -5,7 +5,7 @@ from app.models.entity.pet_owner_profile import PetOwnerProfile
 from app.models.entity.vet_profile import VetProfile
 
 from app.models.schemas.pet_owner_profile import PetOwnerProfileResponseDTO, PetOwnerProfileCreate, PetOwnerProfileUpdate
-from app.models.schemas.vet_owner_profile import VetProfileClientResponseDTO
+from app.models.schemas.vet_profile import VetProfileClientResponseDTO
 
 from app.utils.database_utils import DBUtils
 from app.exceptions.exceptions import AlreadyExistsException, NotFoundException

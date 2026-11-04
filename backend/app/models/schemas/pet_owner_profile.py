@@ -12,9 +12,11 @@ class PetOwnerProfileCreate(BaseModel):
 
 class PetOwnerProfileResponseDTO(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    id: int
     name: str
     phone_number: str
+    
+class PetOwnerProfileAdminResponseDTO(PetOwnerProfileResponseDTO):
+    user_id :int
 
 class PetOwnerProfileUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")

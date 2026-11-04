@@ -3,7 +3,7 @@ import pytest
 from app.models.common.enum import UserRole
 from app.models.entity.pet_owner_profile import PetOwnerProfile
 
-PROFILE_URL = "/pet-owner-profile/me"
+PROFILE_URL = "/pet-owner-profile/"
 VALID_PROFILE = {"name": "Nimal Perera", "phone_number": "0712345678"}
 
 
