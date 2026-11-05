@@ -15,7 +15,7 @@ def get_own_vet_profile(current_user: CurrentUserVet, db: DBSession):
 
 
 @router.get('/pet-owner/{user_id}', status_code=200)
-def get_vet_profile_by_user_id(current_user:CurrentUserVet,user_id: int, db: DBSession):
+def get_pet_owner_profile_by_user_id(current_user:CurrentUserVet,user_id: int, db: DBSession):
     return VetProfileService.get_pet_owner_profile_by_user_id(user_id, db)
 
 
