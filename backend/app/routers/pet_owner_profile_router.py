@@ -10,6 +10,7 @@ from app.models.schemas.pet_owner_profile import (
 from app.models.schemas.vet_profile import VetProfileClientResponseDTO
 
 from app.services.pet_owner_profile_service import PetOwnerProfileService
+from app.models.schemas.pet import PetResponseDTO
 
 
 router = APIRouter(prefix="/pet-owner-profile", tags=["Pet Owner Profile"])
@@ -17,6 +18,10 @@ router = APIRouter(prefix="/pet-owner-profile", tags=["Pet Owner Profile"])
 @router.get('/', status_code=status.HTTP_200_OK)
 def get_pet_owner_profile(current_user: CurrentUserPetOwner, db: DBSession) -> PetOwnerProfileResponseDTO:
     return PetOwnerProfileService.get_own_pet_owner_profile(current_user, db)
+
+@router.get('/pets', status_code=status.HTTP_200_OK)
+def get_own_pets_profiles(current_user: CurrentUserPetOwner, db: DBSession) -> list[PetResponseDTO]:
+    return PetOwnerProfileService.get_own_pets_profiles(current_user, db)
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED)

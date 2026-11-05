@@ -3,9 +3,11 @@ from sqlmodel import Session, select
 from app.models.entity.user import Users
 from app.models.entity.pet_owner_profile import PetOwnerProfile
 from app.models.entity.vet_profile import VetProfile
+from app.models.entity.pet import Pet
 
 from app.models.schemas.pet_owner_profile import PetOwnerProfileResponseDTO, PetOwnerProfileCreate, PetOwnerProfileUpdate
 from app.models.schemas.vet_profile import VetProfileClientResponseDTO
+from app.models.schemas.pet import PetResponseDTO
 
 from app.utils.database_utils import DBUtils
 from app.exceptions.exceptions import AlreadyExistsException, NotFoundException
@@ -37,6 +39,11 @@ class PetOwnerProfileService:
         if profile is None:
             raise NotFoundException("Pet owner profile not found")
         return PetOwnerProfileResponseDTO.model_validate(profile)
+    
+    @staticmethod
+    def get_own_pets_profiles(current_user: Users, db: Session) -> list[PetResponseDTO]:
+        pets = db.exec(select(Pet).where(Pet.owner_id == current_user.user_id)).all()
+        return [PetResponseDTO.model_validate(pet) for pet in pets]
     
     @staticmethod
     def get_vet_profile_by_id(user_id: int, db: Session) -> VetProfileClientResponseDTO:
