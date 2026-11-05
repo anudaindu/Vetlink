@@ -12,6 +12,8 @@ from app.config import Config
 import app.models.entity.user  # noqa: F401
 import app.models.entity.pet_owner_profile  # noqa: F401
 import app.models.entity.vet_profile  # noqa: F401
+import app.models.entity.pet  # noqa: F401
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

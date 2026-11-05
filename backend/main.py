@@ -16,6 +16,7 @@ from app.routers.auth_router import router as auth_router
 from app.routers.user_router import router as user_router
 from app.routers.pet_owner_profile_router import router as pet_owner_profile_router
 from app.routers.vet_profile_router import router as vet_profile_router
+from app.routers.pet_router import router as pet_router
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(pet_owner_profile_router)
 app.include_router(vet_profile_router)
-
+app.include_router(pet_router)
 
 if __name__ == "__main__":
     import uvicorn
