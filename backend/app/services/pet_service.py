@@ -1,8 +1,12 @@
 from sqlmodel import Session, select
 
+from app.models.common.enum import UserRole
 from app.models.entity.user import Users
 from app.models.entity.pet import Pet
+from app.models.entity.pet_owner_profile import PetOwnerProfile
+
 from app.models.schemas.pet import PetCreate, PetResponseDTO, PetUpdate
+
 from app.exceptions.exceptions import NotFoundException, AlreadyExistsException
 from app.utils.database_utils import DBUtils
 
@@ -23,14 +27,16 @@ def _duplicate_msg(name, species) -> str:
 class PetService:
 
     @staticmethod
-    def get_pet_by_id(db: Session, pet_id: int) -> PetResponseDTO:
+    def get_pet_by_id(current_user: Users, db: Session, pet_id: int) -> PetResponseDTO:
         pet = db.get(Pet, pet_id)
-        if pet is None:
+        if pet is None or (pet.owner_id != current_user.user_id and current_user.user_role != UserRole.VET):
             raise NotFoundException(f"Pet profile with id {pet_id} not found")
         return PetResponseDTO.model_validate(pet)
 
     @staticmethod
     def create_new_pet_profile(current_user: Users, db: Session, data: PetCreate) -> PetResponseDTO:
+        if db.get(PetOwnerProfile,current_user.user_id) is None:
+            raise NotFoundException("Pet owner profile not found. Create a pet owner profile first.")
         msg = _duplicate_msg(data.name, data.species)
         if _is_already_added_pet(data.name, data.species, current_user.user_id, db):
             raise AlreadyExistsException(msg)
