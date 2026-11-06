@@ -9,6 +9,7 @@ logging.basicConfig(
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import Config
 from app.exceptions.exception_handlers import app_exception_handler, AppException
@@ -32,6 +33,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Vetlink Backend", lifespan=lifespan,version="1.0.0", description="Backend for Vetlink application")
 app.add_exception_handler(AppException, app_exception_handler)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5500", "http://127.0.0.1:5500"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(auth_router)
