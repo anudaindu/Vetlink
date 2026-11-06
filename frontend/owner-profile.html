@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My profile · VetLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/theme.js"></script>
+    <script type="module" src="js/owner-profile.js"></script>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <div id="nav"></div>
+    <main class="page [&>*]:max-w-2xl">
+      <div class="page-banner banner-owner">
+        <h1 class="page-title" id="title">My profile</h1>
+      </div>
+      <p class="notice" id="status" role="status">Loading…</p>
+      <section class="card hidden">
+        <p class="notice mb-4 hidden" id="intro">Add your details so vets can reach you. You'll need a profile before you can add pets.</p>
+        <form class="form" id="profile-form" novalidate>
+          <p class="hidden" data-form-message role="alert"></p>
+          <div class="form-grid">
+            <div>
+              <label class="label" for="name">Your name</label>
+              <input class="input" id="name" name="name" type="text" autocomplete="name" maxlength="50" />
+              <p class="field-error hidden" data-error-for="name"></p>
+            </div>
+            <div>
+              <label class="label" for="phone_number">Phone number</label>
+              <input class="input" id="phone_number" name="phone_number" type="tel" autocomplete="tel" inputmode="numeric" maxlength="10" />
+              <p class="hint">10 digits, starting with 0.</p>
+              <p class="field-error hidden" data-error-for="phone_number"></p>
+            </div>
+          </div>
+          <button class="btn btn-full" type="submit">Save profile</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

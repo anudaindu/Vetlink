@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My pets · VetLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/theme.js"></script>
+    <script type="module" src="js/pets.js"></script>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <div id="nav"></div>
+    <main class="page">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 class="page-title">My pets</h1>
+          <p class="page-subtitle">Pets registered under your profile.</p>
+        </div>
+        <a class="btn hidden" href="pet-form.html" id="add-pet">Add a pet</a>
+      </div>
+      <p class="notice" id="status" role="status">Loading…</p>
+      <p class="card hidden text-center text-slate-600" id="empty">No pets yet. Add your first pet to get started.</p>
+      <ul class="pet-grid hidden" id="pet-list"></ul>
+    </main>
+  </body>
+</html>

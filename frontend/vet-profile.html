@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My vet profile · VetLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/theme.js"></script>
+    <script type="module" src="js/vet-profile.js"></script>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <div id="nav"></div>
+    <main class="page [&>*]:max-w-2xl">
+      <div class="page-banner banner-vet">
+        <h1 class="page-title" id="title">My vet profile</h1>
+        <span class="hidden" id="verification"></span>
+      </div>
+      <p class="notice" id="status" role="status">Loading…</p>
+      <section class="card hidden">
+        <p class="notice mb-4 hidden" id="intro">Add your details so pet owners can find you.</p>
+        <form class="form" id="profile-form" novalidate>
+          <p class="hidden" data-form-message role="alert"></p>
+          <div class="form-grid">
+            <div>
+              <label class="label" for="name">Your name</label>
+              <input class="input" id="name" name="name" type="text" autocomplete="name" maxlength="50" />
+              <p class="field-error hidden" data-error-for="name"></p>
+            </div>
+            <div>
+              <label class="label" for="license_number">License number</label>
+              <input class="input" id="license_number" name="license_number" type="text" maxlength="20" />
+              <p class="hint hidden" id="license-hint">Your license number can't be changed after it's saved.</p>
+              <p class="field-error hidden" data-error-for="license_number"></p>
+            </div>
+            <div>
+              <label class="label" for="specialization">Specialization</label>
+              <input class="input" id="specialization" name="specialization" type="text" maxlength="100" />
+              <p class="field-error hidden" data-error-for="specialization"></p>
+            </div>
+            <div>
+              <label class="label" for="phone_number">Phone number</label>
+              <input class="input" id="phone_number" name="phone_number" type="tel" autocomplete="tel" inputmode="numeric" maxlength="10" />
+              <p class="hint">10 digits, starting with 0.</p>
+              <p class="field-error hidden" data-error-for="phone_number"></p>
+            </div>
+          </div>
+          <button class="btn btn-full" type="submit">Save profile</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

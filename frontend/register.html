@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create account · VetLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/theme.js"></script>
+    <script type="module" src="js/register.js"></script>
+  </head>
+  <body class="min-h-screen auth-bg text-slate-900">
+    <div id="nav"></div>
+    <main class="page-narrow">
+      <section class="card">
+        <img class="mx-auto mb-4 h-36 w-36" src="assets/logo.png" alt="VetLink: Connect. Care. Protect." />
+        <h1 class="page-title">Create an account</h1>
+        <p class="page-subtitle mb-5">Join VetLink as a pet owner or a vet.</p>
+        <form class="form" id="register-form" novalidate>
+          <p class="hidden" data-form-message role="alert"></p>
+          <fieldset>
+            <legend class="label">I am a</legend>
+            <div class="choice-group">
+              <label class="choice"><input class="sr-only" type="radio" name="user_role" value="pet_owner" checked /> Pet owner</label>
+              <label class="choice"><input class="sr-only" type="radio" name="user_role" value="vet" /> Vet</label>
+            </div>
+            <p class="field-error hidden" data-error-for="user_role"></p>
+          </fieldset>
+          <div>
+            <label class="label" for="email">Email</label>
+            <input class="input" id="email" name="email" type="email" autocomplete="email" />
+            <p class="field-error hidden" data-error-for="email"></p>
+          </div>
+          <div>
+            <label class="label" for="password">Password</label>
+            <input class="input" id="password" name="password" type="password" autocomplete="new-password" />
+            <p class="hint">At least 8 characters.</p>
+            <p class="field-error hidden" data-error-for="password"></p>
+          </div>
+          <button class="btn btn-full" type="submit">Create account</button>
+        </form>
+        <p class="mt-4 text-center text-sm text-slate-600">
+          Already have an account? <a class="text-link" href="login.html">Log in</a>
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
